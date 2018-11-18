@@ -5,7 +5,7 @@
 #include "Includes.h"
 #include "Server.h"
 #include "Client.h"
-#include "Boid.h"
+#include "BoidManager.h"
 
 class Sim
 {
@@ -32,8 +32,8 @@ private:
 	Server server;
 	Client client;
 
-	// Entity setup
-	Boid boid;
+	// Entity Setup
+	BoidManager* boidManager;
 
 	// Draw functions
 	void beginDraw();

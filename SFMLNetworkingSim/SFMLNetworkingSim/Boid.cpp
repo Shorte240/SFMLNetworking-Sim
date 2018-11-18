@@ -10,9 +10,10 @@ Boid::Boid(const sf::Vector2f & size) : CircleShape()
 	velocity.x = 0.0f;
 
 	// Set shape of boid
-	setRadius(80.0f);
+	setRadius(20.0f);
 	setPointCount(3);
-	setPosition(10.f, 10.f);
+
+	setPosition(position);
 	setFillColor(sf::Color::Yellow);
 }
 
@@ -22,4 +23,15 @@ Boid::~Boid()
 
 void Boid::update(float dt)
 {
+}
+
+void Boid::setBoidPosition(sf::Vector2f pos)
+{ 
+	position = pos; 
+	setPosition(position);
+}
+
+void Boid::setBoidVelocity(sf::Vector2f vel)
+{ 
+	velocity = vel; 
 }

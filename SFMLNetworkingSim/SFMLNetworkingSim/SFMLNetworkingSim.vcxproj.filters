@@ -33,6 +33,9 @@
     <ClInclude Include="Sim.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BoidManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Server.cpp">
@@ -51,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Sim.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BoidManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

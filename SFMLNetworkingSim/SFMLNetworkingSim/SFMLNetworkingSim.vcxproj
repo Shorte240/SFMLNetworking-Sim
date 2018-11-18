@@ -153,6 +153,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Boid.h" />
+    <ClInclude Include="BoidManager.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="Includes.h" />
     <ClInclude Include="Input.h" />
@@ -161,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Boid.cpp" />
+    <ClCompile Include="BoidManager.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Server.cpp" />
