@@ -13,12 +13,10 @@ public:
 
 	void update(float dt);
 
-	// Getters
-	sf::Vector2f getBoidPosition() { return position; };
+	// Get the Boids velocity
 	sf::Vector2f getBoidVelocity() { return velocity; };
 
-	// Setters
-	void setBoidPosition(sf::Vector2f pos);
+	// Set the Boids velocity
 	void setBoidVelocity(sf::Vector2f vel);
 
 protected:

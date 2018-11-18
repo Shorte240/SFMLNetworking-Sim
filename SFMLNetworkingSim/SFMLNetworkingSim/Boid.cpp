@@ -25,12 +25,6 @@ void Boid::update(float dt)
 {
 }
 
-void Boid::setBoidPosition(sf::Vector2f pos)
-{ 
-	position = pos; 
-	setPosition(position);
-}
-
 void Boid::setBoidVelocity(sf::Vector2f vel)
 { 
 	velocity = vel; 

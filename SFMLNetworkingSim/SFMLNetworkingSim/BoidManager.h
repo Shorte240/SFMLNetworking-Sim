@@ -24,9 +24,12 @@ private:
 	// Functions
 	void initialisePositions();
 	void moveBoids(float dt);
-	sf::Vector2f rule1(Boid& b);
-	sf::Vector2f rule2(Boid& b);
-	sf::Vector2f rule3(Boid& b);
+	sf::Vector2f rule1(Boid& b, float dt);
+	sf::Vector2f rule2(Boid& b, float dt);
+	sf::Vector2f rule3(Boid& b, float dt);
+	sf::Vector2f rule4(Boid& b, float dt);
+	sf::Vector2f rule5(Boid& b, float dt);
+	sf::Vector2f rule6(Boid& b, float dt);
 
 	// Entity setup
 	std::list<Boid> Boids;
