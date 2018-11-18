@@ -19,16 +19,12 @@ BoidManager::~BoidManager()
 
 void BoidManager::update(float dt)
 {
-	// BOIDS PROGRAM PSEUDOCODE
-
-	/*for (auto& b : Boids)
-	{
-		b.update(dt);
-	}*/
-
-	// LOOP
 	moveBoids(dt);
-	// END LOOP
+
+	for (auto& b : Boids)
+	{
+		std::cout << "Boid X: " << b.getPosition().x << ", Boid Y: " << b.getPosition().y << std::endl;
+	}
 }
 
 void BoidManager::render(sf::RenderWindow * window)
@@ -51,7 +47,7 @@ void BoidManager::moveBoids(float dt)
 		v3 = rule3(b);
 
 		b.setBoidVelocity(b.getBoidVelocity() + v1 + v2 + v3);
-		b.setBoidPosition(b.getBoidPosition() + b.getBoidVelocity());
+		b.move(b.getBoidVelocity() * dt);
 	}
 }
 
@@ -76,15 +72,15 @@ sf::Vector2f BoidManager::rule1(Boid& bj)
 
 	for (auto& b: Boids)
 	{
-		if (b.getBoidPosition() != bj.getBoidPosition())
+		if (b.getPosition() != bj.getPosition())
 		{
-			perceivedCentre = perceivedCentre + b.getBoidPosition();
+			perceivedCentre = perceivedCentre + b.getPosition();
 		}
 	}
 
 	perceivedCentre = (perceivedCentre / (NUM_BOIDS - 1.0f));
 
-	return ((perceivedCentre - bj.getBoidPosition()) / 100.0f);
+	return ((perceivedCentre - bj.getPosition()) / 100.0f);
 }
 
 // Rule 2: Boids try to keep a small distance away from other objects (including other boids).
@@ -94,13 +90,13 @@ sf::Vector2f BoidManager::rule2(Boid& bj)
 
 	for (auto& b : Boids)
 	{
-		if (b.getBoidPosition() != bj.getBoidPosition())
+		if (b.getPosition() != bj.getPosition())
 		{
-			if (abs(b.getBoidPosition().x - bj.getBoidPosition().x) < 100.0f)
+			if (abs(b.getPosition().x - bj.getPosition().x) < 100.0f)
 			{
-				if (abs(b.getBoidPosition().y - bj.getBoidPosition().y) < 100.0f)
+				if (abs(b.getPosition().y - bj.getPosition().y) < 100.0f)
 				{
-					currentDistance = currentDistance - (b.getBoidPosition() - bj.getBoidPosition()); 
+					currentDistance = currentDistance - (b.getPosition() - bj.getPosition());
 				}
 			}
 		}
@@ -116,7 +112,7 @@ sf::Vector2f BoidManager::rule3(Boid& bj)
 
 	for (auto& b : Boids)
 	{
-		if (b.getBoidPosition() != bj.getBoidPosition())
+		if (b.getPosition() != bj.getPosition())
 		{
 			perceivedVelocity = perceivedVelocity + b.getBoidVelocity();
 		}
