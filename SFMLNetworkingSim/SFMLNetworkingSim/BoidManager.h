@@ -11,7 +11,7 @@
 class BoidManager
 {
 public:
-	BoidManager(sf::RenderWindow* hwnd);
+	BoidManager(sf::RenderWindow* hwnd, Input* in);
 	~BoidManager();
 
 	void update(float dt);
@@ -20,6 +20,7 @@ public:
 private:
 	// Variables
 	sf::RenderWindow* window;
+	Input* input;
 
 	// Functions
 	void initialisePositions();
@@ -33,5 +34,6 @@ private:
 
 	// Entity setup
 	std::list<Boid> Boids;
+	float speed;
 };
 

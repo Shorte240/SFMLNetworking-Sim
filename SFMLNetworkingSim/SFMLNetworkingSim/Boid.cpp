@@ -10,7 +10,7 @@ Boid::Boid(const sf::Vector2f & size) : CircleShape()
 	velocity.x = 0.0f;
 
 	// Set shape of boid
-	setRadius(20.0f);
+	setRadius(5.0f);
 	setPointCount(3);
 
 	setPosition(position);

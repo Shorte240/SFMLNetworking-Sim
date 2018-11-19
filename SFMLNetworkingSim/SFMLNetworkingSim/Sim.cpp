@@ -5,7 +5,7 @@ Sim::Sim(sf::RenderWindow* hwnd, Input* in)
 	window = hwnd;
 	input = in;
 
-	boidManager = new BoidManager(window);
+	boidManager = new BoidManager(window, input);
 }
 
 Sim::~Sim()

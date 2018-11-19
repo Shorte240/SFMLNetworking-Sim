@@ -1,8 +1,9 @@
 #include "BoidManager.h"
 
-BoidManager::BoidManager(sf::RenderWindow* hwnd)
+BoidManager::BoidManager(sf::RenderWindow* hwnd, Input* in)
 {
 	window = hwnd;
+	input = in;
 
 	for (int i = 0; i < NUM_BOIDS; i++)
 	{
@@ -11,6 +12,9 @@ BoidManager::BoidManager(sf::RenderWindow* hwnd)
 
 	// Initialise boid positions
 	initialisePositions();
+
+	// Set the speed
+	speed = 10.f;
 }
 
 BoidManager::~BoidManager()
@@ -50,7 +54,7 @@ void BoidManager::moveBoids(float dt)
 		v6 = rule6(b, dt);
 
 		b.setBoidVelocity(b.getBoidVelocity() + v1 + v2 + v3 + v4 + v5 + v6);
-		b.move(b.getBoidVelocity() * dt);
+		b.move(b.getBoidVelocity() * speed * dt);
 	}
 }
 
@@ -83,6 +87,7 @@ sf::Vector2f BoidManager::rule1(Boid& bj, float dt)
 
 	perceivedCentre = (perceivedCentre / (NUM_BOIDS - 1.0f));
 
+	// Move the boids 1% of the way towards the centre of mass
 	return (((perceivedCentre - bj.getPosition()) / 100.0f) * dt);
 }
 
@@ -91,13 +96,15 @@ sf::Vector2f BoidManager::rule2(Boid& bj, float dt)
 {
 	sf::Vector2f currentDistance = sf::Vector2f(0.0f, 0.0f);
 
+	float distance = (bj.getRadius() * 10.f);
+
 	for (auto& b : Boids)
 	{
 		if (b.getPosition() != bj.getPosition())
 		{
-			if (abs(b.getPosition().x - bj.getPosition().x) < 100.0f)
+			if (abs(b.getPosition().x - bj.getPosition().x) < distance)
 			{
-				if (abs(b.getPosition().y - bj.getPosition().y) < 100.0f)
+				if (abs(b.getPosition().y - bj.getPosition().y) < distance)
 				{
 					currentDistance = currentDistance - (b.getPosition() - bj.getPosition());
 				}
@@ -131,8 +138,11 @@ sf::Vector2f BoidManager::rule4(Boid & bj, float dt)
 {
 	sf::Vector2f place;
 
-	place.x = window->getSize().x / 2.0f;
-	place.y = window->getSize().y / 2.0f;
+	/*place.x = window->getSize().x / 2.0f;
+	place.y = window->getSize().y / 2.0f;*/
+
+	place.x = input->getMouseX();
+	place.y = input->getMouseY();
 
 	return (((place - bj.getPosition()) / 100.0f) * dt);
 }
@@ -141,19 +151,18 @@ sf::Vector2f BoidManager::rule4(Boid & bj, float dt)
 sf::Vector2f BoidManager::rule5(Boid & bj, float dt)
 {
 	float speedLimit;
-	speedLimit = 200.0f;
-	sf::Vector2f v;
+	speedLimit = 10.0f;
+	sf::Vector2f newVelocity;
 
 	if (abs(bj.getBoidVelocity().x) > speedLimit)
 	{
 		if (abs(bj.getBoidVelocity().y) > speedLimit)
 		{
-			sf::Vector2f newVelocity;
 			newVelocity = ((bj.getBoidVelocity()) / (abs(bj.getBoidVelocity().x) * abs(bj.getBoidVelocity().y) * speedLimit));
-			bj.setBoidVelocity(newVelocity * dt);
+			return (newVelocity * dt);
 		}
 	}
-	return sf::Vector2f();
+	return sf::Vector2f(0.0f, 0.0f);
 }
 
 // Rule 6: Bound the positions of the boids within the window.
