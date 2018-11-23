@@ -41,10 +41,16 @@ void BoidManager::update(float dt)
 
 	outputText();
 
-	/*for (auto& b : Boids)
+	if (input->isMouseLeftDown())
+	{
+		input->setMouseLeftDown(false);
+		Obstacles.push_back(Obstacle(sf::Vector2f(input->getMouseX(),input->getMouseY())));
+	}
+
+	for (auto& b : Boids)
 	{
 		std::cout << "Boid X: " << b.getPosition().x << ", Boid Y: " << b.getPosition().y << std::endl;
-	}*/
+	}
 }
 
 void BoidManager::render(sf::RenderWindow * window)
@@ -53,6 +59,12 @@ void BoidManager::render(sf::RenderWindow * window)
 	for (auto& b : Boids)
 	{
 		window->draw(b);
+	}
+
+	// Draw the obstacle
+	for (auto& o : Obstacles)
+	{
+		window->draw(o);
 	}
 
 	// Render the text
@@ -70,12 +82,13 @@ void BoidManager::moveBoids(float dt)
 		v1 = rule1(b, dt);
 		v2 = rule2(b, dt);
 		v3 = rule3(b, dt);
-		v4 = rule4(b, dt);
-		v5 = rule5(b, dt);
-		v6 = rule6(b, dt);
+		v4 = rule4(b, dt, sf::Vector2f(input->getMouseX(), input->getMouseY()));
+		v5 = rule6(b, dt);
+		v6 = rule7(b, dt);
 
 		b.setBoidVelocity(b.getBoidVelocity() + v1 + v2 + v3 + v4 + v5 + v6);
 		b.move(b.getBoidVelocity() * speed * dt);
+		rule5(b, dt);
 		float angle = (atan2(b.getBoidVelocity().x, -b.getBoidVelocity().y) * 180 / 3.1415);
 		b.setRotation(angle);
 	}
@@ -137,17 +150,17 @@ sf::Vector2f BoidManager::rule2(Boid& bj, float dt)
 {
 	sf::Vector2f currentDistance = sf::Vector2f(0.0f, 0.0f);
 
-	if (input->isKeyDown(sf::Keyboard::Subtract))
+	if (input->isKeyDown(sf::Keyboard::A))
 	{
-		input->setKeyUp(sf::Keyboard::Subtract);
+		input->setKeyUp(sf::Keyboard::A);
 		if (separationValue > 1)
 		{
 			separationValue -= 1;
 		}
 	}
-	else if (input->isKeyDown(sf::Keyboard::Add))
+	else if (input->isKeyDown(sf::Keyboard::Q))
 	{
-		input->setKeyUp(sf::Keyboard::Add);
+		input->setKeyUp(sf::Keyboard::Q);
 		if (separationValue < 100)
 		{
 			separationValue += 1;
@@ -194,35 +207,26 @@ sf::Vector2f BoidManager::rule3(Boid& bj, float dt)
 }
 
 // Rule 4: Tendency towards a particular place
-sf::Vector2f BoidManager::rule4(Boid & bj, float dt)
+sf::Vector2f BoidManager::rule4(Boid & bj, float dt, sf::Vector2f place)
 {
-	sf::Vector2f place;
-
-	/*place.x = window->getSize().x / 2.0f;
-	place.y = window->getSize().y / 2.0f;*/
-
-	place.x = input->getMouseX();
-	place.y = input->getMouseY();
-
 	return (((place - bj.getPosition()) / 100.0f) * dt);
 }
 
 // Rule 5: Limiting the speed of the boids.
-sf::Vector2f BoidManager::rule5(Boid & bj, float dt)
+void BoidManager::rule5(Boid & bj, float dt)
 {
 	float speedLimit;
-	speedLimit = 1.0f;
+	speedLimit = 10.0f;
 	sf::Vector2f newVelocity;
 
 	if (abs(bj.getBoidVelocity().x) > speedLimit)
 	{
 		if (abs(bj.getBoidVelocity().y) > speedLimit)
 		{
-			newVelocity = ((bj.getBoidVelocity()) / (abs(bj.getBoidVelocity().x) * abs(bj.getBoidVelocity().y) * speedLimit));
-			return (newVelocity * dt);
+			newVelocity = ((bj.getBoidVelocity()) / ((abs(bj.getBoidVelocity().x)) * (abs(bj.getBoidVelocity().y)))) * speedLimit;
+			bj.setBoidVelocity(newVelocity);
 		}
 	}
-	return sf::Vector2f(0.0f, 0.0f);
 }
 
 // Rule 6: Bound the positions of the boids within the window.
@@ -254,4 +258,28 @@ sf::Vector2f BoidManager::rule6(Boid & bj, float dt)
 	}
 
 	return (v * dt);
+}
+
+// Rule 7: Tendency away from a particular place.
+sf::Vector2f BoidManager::rule7(Boid & bj, float dt)
+{
+	sf::Vector2f v;
+	float m = 50.0f;
+	sf::Vector2f place;
+	float dist = 50.0f;
+
+	for (auto& o : Obstacles)
+	{
+		if (abs(bj.getPosition().x - o.getPosition().x) < dist)
+		{
+			if (abs(bj.getPosition().y - o.getPosition().y) < dist)
+			{
+				place.x = o.getPosition().x;
+				place.y = o.getPosition().y;
+				v = -m * rule4(bj, dt, place);
+			}
+		}
+	}
+
+	return v;
 }

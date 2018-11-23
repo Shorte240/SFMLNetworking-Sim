@@ -157,6 +157,7 @@
     <ClInclude Include="Client.h" />
     <ClInclude Include="Includes.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="Obstacle.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="Sim.h" />
   </ItemGroup>
@@ -165,6 +166,7 @@
     <ClCompile Include="BoidManager.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Obstacle.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Sim.cpp" />

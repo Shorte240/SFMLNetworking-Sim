@@ -5,6 +5,7 @@
 
 #include "Includes.h"
 #include "Boid.h"
+#include "Obstacle.h"
 
 #define NUM_BOIDS 5
 
@@ -29,9 +30,10 @@ private:
 	sf::Vector2f rule1(Boid& b, float dt);
 	sf::Vector2f rule2(Boid& b, float dt);
 	sf::Vector2f rule3(Boid& b, float dt);
-	sf::Vector2f rule4(Boid& b, float dt);
-	sf::Vector2f rule5(Boid& b, float dt);
+	sf::Vector2f rule4(Boid& b, float dt, sf::Vector2f place);
+	void rule5(Boid& b, float dt);
 	sf::Vector2f rule6(Boid& b, float dt);
+	sf::Vector2f rule7(Boid& b, float dt);
 
 	// Text & Font
 	sf::Font font;
@@ -40,6 +42,7 @@ private:
 
 	// Entity setup
 	std::list<Boid> Boids;
+	std::list<Obstacle> Obstacles;
 	int fps;
 	float speed;
 	int separationValue;
