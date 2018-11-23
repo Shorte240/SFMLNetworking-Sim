@@ -15,6 +15,15 @@ BoidManager::BoidManager(sf::RenderWindow* hwnd, Input* in)
 
 	// Set the speed
 	speed = 10.f;
+
+	// Set the distance boids are spaced apart
+	separationValue = 50;
+
+	// Set up font
+	if (!font.loadFromFile("font/arial.ttf"))
+	{
+		std::cout << "Font can't load" << std::endl;
+	}
 }
 
 BoidManager::~BoidManager()
@@ -25,18 +34,24 @@ void BoidManager::update(float dt)
 {
 	moveBoids(dt);
 
-	for (auto& b : Boids)
+	outputText();
+
+	/*for (auto& b : Boids)
 	{
 		std::cout << "Boid X: " << b.getPosition().x << ", Boid Y: " << b.getPosition().y << std::endl;
-	}
+	}*/
 }
 
 void BoidManager::render(sf::RenderWindow * window)
 {
+	// Draw all the boids
 	for (auto& b : Boids)
 	{
 		window->draw(b);
 	}
+
+	// Render the text
+	window->draw(boidSeparationText);
 }
 
 // Move all the boids according to the rules.
@@ -58,6 +73,16 @@ void BoidManager::moveBoids(float dt)
 		float angle = (atan2(b.getBoidVelocity().x, -b.getBoidVelocity().y) * 180 / 3.1415);
 		b.setRotation(angle);
 	}
+}
+
+// Output all crucial variables to the screen via text
+void BoidManager::outputText()
+{
+	boidSeparationText.setFont(font);
+	boidSeparationText.setCharacterSize(12);
+	boidSeparationText.setString("Separation Value: " + std::to_string(separationValue));
+	boidSeparationText.setFillColor(sf::Color::White);
+	boidSeparationText.setPosition(window->getSize().x - 162, 0);
 }
 
 // Give initial positions to each boid.
@@ -98,15 +123,34 @@ sf::Vector2f BoidManager::rule2(Boid& bj, float dt)
 {
 	sf::Vector2f currentDistance = sf::Vector2f(0.0f, 0.0f);
 
-	float distance = (bj.getRadius() * 10.f);
+	if (input->isKeyDown(sf::Keyboard::Subtract))
+	{
+		input->setKeyUp(sf::Keyboard::Subtract);
+		if (separationValue > 1)
+		{
+			separationValue -= 1;
+		}
+	}
+	else if (input->isKeyDown(sf::Keyboard::Add))
+	{
+		input->setKeyUp(sf::Keyboard::Add);
+		if (separationValue < 100)
+		{
+			separationValue += 1;
+		}
+	}
+	else
+	{
+		separationValue = separationValue;
+	}
 
 	for (auto& b : Boids)
 	{
 		if (b.getPosition() != bj.getPosition())
 		{
-			if (abs(b.getPosition().x - bj.getPosition().x) < distance)
+			if (abs(b.getPosition().x - bj.getPosition().x) < separationValue)
 			{
-				if (abs(b.getPosition().y - bj.getPosition().y) < distance)
+				if (abs(b.getPosition().y - bj.getPosition().y) < separationValue)
 				{
 					currentDistance = currentDistance - (b.getPosition() - bj.getPosition());
 				}

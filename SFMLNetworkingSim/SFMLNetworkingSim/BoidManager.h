@@ -23,6 +23,7 @@ private:
 	Input* input;
 
 	// Functions
+	void outputText();
 	void initialisePositions();
 	void moveBoids(float dt);
 	sf::Vector2f rule1(Boid& b, float dt);
@@ -32,8 +33,13 @@ private:
 	sf::Vector2f rule5(Boid& b, float dt);
 	sf::Vector2f rule6(Boid& b, float dt);
 
+	// Text & Font
+	sf::Font font;
+	sf::Text boidSeparationText;
+
 	// Entity setup
 	std::list<Boid> Boids;
 	float speed;
+	int separationValue;
 };
 
