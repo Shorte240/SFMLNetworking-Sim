@@ -13,6 +13,9 @@ BoidManager::BoidManager(sf::RenderWindow* hwnd, Input* in)
 	// Initialise boid positions
 	initialisePositions();
 
+	// Initial fps value
+	fps = 0.0f;
+
 	// Set the speed
 	speed = 10.f;
 
@@ -32,6 +35,8 @@ BoidManager::~BoidManager()
 
 void BoidManager::update(float dt)
 {
+	fps = 1.0f / dt;
+
 	moveBoids(dt);
 
 	outputText();
@@ -51,6 +56,7 @@ void BoidManager::render(sf::RenderWindow * window)
 	}
 
 	// Render the text
+	window->draw(fpsText);
 	window->draw(boidSeparationText);
 }
 
@@ -78,11 +84,19 @@ void BoidManager::moveBoids(float dt)
 // Output all crucial variables to the screen via text
 void BoidManager::outputText()
 {
+	// FPS text
+	fpsText.setFont(font);
+	fpsText.setCharacterSize(12);
+	fpsText.setString("FPS: " + std::to_string(fps));
+	fpsText.setFillColor(sf::Color::White);
+	fpsText.setPosition(window->getSize().x - 162, 0);
+
+	// Boid separation value text
 	boidSeparationText.setFont(font);
 	boidSeparationText.setCharacterSize(12);
 	boidSeparationText.setString("Separation Value: " + std::to_string(separationValue));
 	boidSeparationText.setFillColor(sf::Color::White);
-	boidSeparationText.setPosition(window->getSize().x - 162, 0);
+	boidSeparationText.setPosition(window->getSize().x - 162, 12);
 }
 
 // Give initial positions to each boid.

@@ -35,10 +35,12 @@ private:
 
 	// Text & Font
 	sf::Font font;
+	sf::Text fpsText;
 	sf::Text boidSeparationText;
 
 	// Entity setup
 	std::list<Boid> Boids;
+	int fps;
 	float speed;
 	int separationValue;
 };
