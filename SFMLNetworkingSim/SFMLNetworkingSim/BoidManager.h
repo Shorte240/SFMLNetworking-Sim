@@ -27,13 +27,13 @@ private:
 	void outputText();
 	void initialisePositions();
 	void moveBoids(float dt);
-	sf::Vector2f rule1(Boid& b, float dt);
-	sf::Vector2f rule2(Boid& b, float dt);
-	sf::Vector2f rule3(Boid& b, float dt);
-	sf::Vector2f rule4(Boid& b, float dt, sf::Vector2f place);
-	void rule5(Boid& b, float dt);
-	sf::Vector2f rule6(Boid& b, float dt);
-	sf::Vector2f rule7(Boid& b, float dt);
+	void limitVelocity(Boid& b, float dt);
+	sf::Vector2f moveTowardsGroup(Boid& b, float dt);
+	sf::Vector2f distanceCheck(Boid& b, float dt);
+	sf::Vector2f matchVelocity(Boid& b, float dt);
+	sf::Vector2f seekPlace(Boid& b, float dt, sf::Vector2f place);
+	sf::Vector2f boundPositions(Boid& b, float dt);
+	sf::Vector2f avoidPlace(Boid& b, float dt);
 
 	// Text & Font
 	sf::Font font;

@@ -79,16 +79,16 @@ void BoidManager::moveBoids(float dt)
 
 	for (auto& b : Boids)
 	{
-		v1 = rule1(b, dt);
-		v2 = rule2(b, dt);
-		v3 = rule3(b, dt);
-		v4 = rule4(b, dt, sf::Vector2f(input->getMouseX(), input->getMouseY()));
-		v5 = rule6(b, dt);
-		v6 = rule7(b, dt);
+		v1 = moveTowardsGroup(b, dt);
+		v2 = distanceCheck(b, dt);
+		v3 = matchVelocity(b, dt);
+		v4 = seekPlace(b, dt, sf::Vector2f(input->getMouseX(), input->getMouseY()));
+		v5 = boundPositions(b, dt);
+		v6 = avoidPlace(b, dt);
 
 		b.setBoidVelocity(b.getBoidVelocity() + v1 + v2 + v3 + v4 + v5 + v6);
 		b.move(b.getBoidVelocity() * speed * dt);
-		rule5(b, dt);
+		limitVelocity(b, dt);
 		float angle = (atan2(b.getBoidVelocity().x, -b.getBoidVelocity().y) * 180 / 3.1415);
 		b.setRotation(angle);
 	}
@@ -126,7 +126,7 @@ void BoidManager::initialisePositions()
 }
 
 // Rule 1: Boids try to fly towards the centre of mass of neighbouring boids.
-sf::Vector2f BoidManager::rule1(Boid& bj, float dt)
+sf::Vector2f BoidManager::moveTowardsGroup(Boid& bj, float dt)
 {
 	// Move the boid towards the perceivedCentre
 	sf::Vector2f perceivedCentre;
@@ -146,7 +146,7 @@ sf::Vector2f BoidManager::rule1(Boid& bj, float dt)
 }
 
 // Rule 2: Boids try to keep a small distance away from other objects (including other boids).
-sf::Vector2f BoidManager::rule2(Boid& bj, float dt)
+sf::Vector2f BoidManager::distanceCheck(Boid& bj, float dt)
 {
 	sf::Vector2f currentDistance = sf::Vector2f(0.0f, 0.0f);
 
@@ -189,7 +189,7 @@ sf::Vector2f BoidManager::rule2(Boid& bj, float dt)
 }
 
 // Rule 3: Boids try to match velocity with near boids.
-sf::Vector2f BoidManager::rule3(Boid& bj, float dt)
+sf::Vector2f BoidManager::matchVelocity(Boid& bj, float dt)
 {
 	sf::Vector2f perceivedVelocity;
 
@@ -207,13 +207,13 @@ sf::Vector2f BoidManager::rule3(Boid& bj, float dt)
 }
 
 // Rule 4: Tendency towards a particular place
-sf::Vector2f BoidManager::rule4(Boid & bj, float dt, sf::Vector2f place)
+sf::Vector2f BoidManager::seekPlace(Boid & bj, float dt, sf::Vector2f place)
 {
 	return (((place - bj.getPosition()) / 100.0f) * dt);
 }
 
 // Rule 5: Limiting the speed of the boids.
-void BoidManager::rule5(Boid & bj, float dt)
+void BoidManager::limitVelocity(Boid & bj, float dt)
 {
 	float speedLimit;
 	speedLimit = 10.0f;
@@ -230,7 +230,7 @@ void BoidManager::rule5(Boid & bj, float dt)
 }
 
 // Rule 6: Bound the positions of the boids within the window.
-sf::Vector2f BoidManager::rule6(Boid & bj, float dt)
+sf::Vector2f BoidManager::boundPositions(Boid & bj, float dt)
 {
 	float xMin, xMax, yMin, yMax;
 	xMin = 0.0f;
@@ -261,10 +261,10 @@ sf::Vector2f BoidManager::rule6(Boid & bj, float dt)
 }
 
 // Rule 7: Tendency away from a particular place.
-sf::Vector2f BoidManager::rule7(Boid & bj, float dt)
+sf::Vector2f BoidManager::avoidPlace(Boid & bj, float dt)
 {
 	sf::Vector2f v;
-	float m = 50.0f;
+	float m = 100.0f;
 	sf::Vector2f place;
 	float dist = 50.0f;
 
@@ -276,7 +276,7 @@ sf::Vector2f BoidManager::rule7(Boid & bj, float dt)
 			{
 				place.x = o.getPosition().x;
 				place.y = o.getPosition().y;
-				v = -m * rule4(bj, dt, place);
+				v = -m * seekPlace(bj, dt, place);
 			}
 		}
 	}
