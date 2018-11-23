@@ -55,6 +55,8 @@ void BoidManager::moveBoids(float dt)
 
 		b.setBoidVelocity(b.getBoidVelocity() + v1 + v2 + v3 + v4 + v5 + v6);
 		b.move(b.getBoidVelocity() * speed * dt);
+		float angle = (atan2(b.getBoidVelocity().x, -b.getBoidVelocity().y) * 180 / 3.1415);
+		b.setRotation(angle);
 	}
 }
 
@@ -151,7 +153,7 @@ sf::Vector2f BoidManager::rule4(Boid & bj, float dt)
 sf::Vector2f BoidManager::rule5(Boid & bj, float dt)
 {
 	float speedLimit;
-	speedLimit = 10.0f;
+	speedLimit = 1.0f;
 	sf::Vector2f newVelocity;
 
 	if (abs(bj.getBoidVelocity().x) > speedLimit)
