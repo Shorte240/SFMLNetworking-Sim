@@ -14,7 +14,11 @@ Boid::Boid(const sf::Vector2f & size) : CircleShape()
 	setPointCount(3);
 
 	setPosition(position);
-	setFillColor(sf::Color::Yellow);
+	float r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
+	float g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
+	float b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
+	
+	setFillColor(sf::Color(r, g, b, 255.0f));
 }
 
 Boid::~Boid()

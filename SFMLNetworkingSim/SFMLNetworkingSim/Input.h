@@ -34,6 +34,6 @@ private:
 
 	bool keys[256]{ false };
 	Mouse mouse;
-	sf::Vector2f* mW;
+	sf::Vector2f* mouseWorldPos;
 };
 

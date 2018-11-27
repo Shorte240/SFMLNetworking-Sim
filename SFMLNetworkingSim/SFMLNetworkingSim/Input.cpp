@@ -7,16 +7,24 @@ Input::Input()
 
 Input::~Input()
 {
+	delete mouseWorldPos;
+	mouseWorldPos = NULL;
 }
 
 void Input::setKeyDown(int key)
 {
-	keys[key] = true;
+	if (key != -1)
+	{
+		keys[key] = true;
+	}
 }
 
 void Input::setKeyUp(int key)
 {
-	keys[key] = false;
+	if (key != -1)
+	{
+		keys[key] = false;
+	}
 }
 
 bool Input::isKeyDown(int key)
@@ -72,12 +80,12 @@ bool Input::isMouseRightDown()
 
 void Input::setMouseWorld(sf::Vector2f* v)
 {
-	mW = v;
+	mouseWorldPos = v;
 }
 
 // Get the location of the mouse based on sf::Mouse
 // Using this to help correct view bugs with mouse movement.
 sf::Vector2f Input::getMouseWorld()
 {
-	return *mW;
+	return *mouseWorldPos;
 }

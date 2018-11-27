@@ -5,6 +5,8 @@ BoidManager::BoidManager(sf::RenderWindow* hwnd, Input* in)
 	window = hwnd;
 	input = in;
 
+
+	srand(time(NULL));
 	for (int i = 0; i < NUM_BOIDS; i++)
 	{
 		Boids.push_back(Boid());
@@ -37,20 +39,20 @@ void BoidManager::update(float dt)
 {
 	fps = 1.0f / dt;
 
-	moveBoids(dt);
-
-	outputText();
-
 	if (input->isMouseLeftDown())
 	{
 		input->setMouseLeftDown(false);
 		Obstacles.push_back(Obstacle(sf::Vector2f(input->getMouseX(),input->getMouseY())));
 	}
 
+	moveBoids(dt);
+
 	for (auto& b : Boids)
 	{
 		std::cout << "Boid X: " << b.getPosition().x << ", Boid Y: " << b.getPosition().y << std::endl;
 	}
+
+	outputText();
 }
 
 void BoidManager::render(sf::RenderWindow * window)
@@ -119,7 +121,7 @@ void BoidManager::initialisePositions()
 	for (auto& b : Boids)
 	{
 		float randX = (rand() % window->getSize().x);
-		float randY = (rand() % window->getSize().y);;
+		float randY = (rand() % window->getSize().y);
 		sf::Vector2f newPos = sf::Vector2f(randX, randY);
 		b.setPosition(newPos);
 	}
