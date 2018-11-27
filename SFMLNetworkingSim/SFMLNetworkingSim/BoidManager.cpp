@@ -198,7 +198,7 @@ sf::Vector2f BoidManager::seekPlace(Boid & bj, float dt, sf::Vector2f place)
 void BoidManager::limitVelocity(Boid & bj, float dt)
 {
 	float speedLimit;
-	speedLimit = 10.0f;
+	speedLimit = 30.0f;
 	sf::Vector2f newVelocity;
 
 	if (abs(bj.getBoidVelocity().x) > speedLimit)
@@ -217,6 +217,7 @@ void BoidManager::limitVelocity(Boid & bj, float dt)
 	}
 }
 
+// Check if the boids are outwith the window and alter their position accordingly
 void BoidManager::positionWindowWrapping(Boid & bj, float dt)
 {
 	float xMin, xMax, yMin, yMax;
