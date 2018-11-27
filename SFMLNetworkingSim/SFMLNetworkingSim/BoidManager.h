@@ -18,6 +18,9 @@ public:
 	void update(float dt, std::list<Obstacle>& obs);
 	void render(sf::RenderWindow* window);
 
+	// Get the list of boids
+	std::list<Boid>& getBoidFlock() { return boidFlock; };
+
 private:
 	// Variables
 	sf::RenderWindow* window;
