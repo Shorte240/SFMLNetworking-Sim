@@ -28,14 +28,13 @@ private:
 
 	// Functions
 	void updateText();
-	
 
 	// Text setup
 	sf::Font font;
 	int fps;
 	sf::Text fpsText;
 
-	// Server setup
+	// Network setup
 	Server server;
 	Client client;
 

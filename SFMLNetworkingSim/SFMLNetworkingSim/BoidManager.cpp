@@ -52,7 +52,7 @@ void BoidManager::render(sf::RenderWindow * window)
 // Move all the boids according to the rules.
 void BoidManager::moveBoids(float dt, std::list<Obstacle>& obs)
 {
-	sf::Vector2f v1, v2, v3, v4, v5, v6;
+	sf::Vector2f v1, v2, v3, v4, /*v5,*/ v6;
 
 	for (auto& boid : boidFlock)
 	{
@@ -60,12 +60,13 @@ void BoidManager::moveBoids(float dt, std::list<Obstacle>& obs)
 		v2 = distanceCheck(boid, dt);
 		v3 = matchVelocity(boid, dt);
 		v4 = seekPlace(boid, dt, sf::Vector2f(input->getMouseX(), input->getMouseY()));
-		v5 = boundPositions(boid, dt);
+		//v5 = boundPositions(boid, dt);
 		v6 = avoidPlace(boid, dt, obs);
 
-		boid.setBoidVelocity(boid.getBoidVelocity() + v1 + v2 + v3 + v4 + v5 + v6);
+		boid.setBoidVelocity(boid.getBoidVelocity() + v1 + v2 + v3 + v4 + /*v5 +*/ v6);
 		boid.move(boid.getBoidVelocity() * speed * dt);
 		limitVelocity(boid, dt);
+		positionWindowWrapping(boid, dt);
 		float angle = (atan2(boid.getBoidVelocity().x, -boid.getBoidVelocity().y) * 180 / 3.1415);
 		boid.setRotation(angle);
 	}
@@ -202,11 +203,43 @@ void BoidManager::limitVelocity(Boid & bj, float dt)
 
 	if (abs(bj.getBoidVelocity().x) > speedLimit)
 	{
-		if (abs(bj.getBoidVelocity().y) > speedLimit)
-		{
-			newVelocity = ((bj.getBoidVelocity()) / ((abs(bj.getBoidVelocity().x)) * (abs(bj.getBoidVelocity().y)))) * speedLimit;
-			bj.setBoidVelocity(newVelocity);
-		}
+		newVelocity = ((bj.getBoidVelocity()) / ((abs(bj.getBoidVelocity().x)))) * speedLimit;
+		bj.setBoidVelocity(newVelocity);
+	}
+	else if (abs(bj.getBoidVelocity().y) > speedLimit)
+	{
+		newVelocity = ((bj.getBoidVelocity()) / ((abs(bj.getBoidVelocity().y)))) * speedLimit;
+		bj.setBoidVelocity(newVelocity);
+	}
+	else
+	{
+		bj.setBoidVelocity(bj.getBoidVelocity());
+	}
+}
+
+void BoidManager::positionWindowWrapping(Boid & bj, float dt)
+{
+	float xMin, xMax, yMin, yMax;
+	xMin = 0.0f;
+	xMax = window->getSize().x;
+	yMin = 0.0f;
+	yMax = window->getSize().y;
+
+	if (bj.getPosition().x < xMin)
+	{
+		bj.setPosition(bj.getPosition().x + xMax, bj.getPosition().y);
+	}
+	else if (bj.getPosition().x > xMax)
+	{
+		bj.setPosition(bj.getPosition().x - xMax, bj.getPosition().y);
+	}
+	if (bj.getPosition().y < yMin)
+	{
+		bj.setPosition(bj.getPosition().x, bj.getPosition().y + yMax);
+	}
+	else if (bj.getPosition().y > yMax)
+	{
+		bj.setPosition(bj.getPosition().x, bj.getPosition().y - yMax);
 	}
 }
 
@@ -233,7 +266,7 @@ sf::Vector2f BoidManager::boundPositions(Boid & bj, float dt)
 	{
 		v.y = 10.0f;
 	}
-	else if (bj.getPosition().x > yMax)
+	else if (bj.getPosition().y > yMax)
 	{
 		v.y = -10.0f;
 	}

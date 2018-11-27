@@ -31,6 +31,7 @@ private:
 	void initialisePositions();
 	void moveBoids(float dt, std::list<Obstacle>& obs);
 	void limitVelocity(Boid& b, float dt);
+	void positionWindowWrapping(Boid& b, float dt);
 	sf::Vector2f moveTowardsGroup(Boid& b, float dt);
 	sf::Vector2f distanceCheck(Boid& b, float dt);
 	sf::Vector2f matchVelocity(Boid& b, float dt);
