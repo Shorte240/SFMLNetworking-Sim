@@ -1,11 +1,8 @@
 #include "Boid.h"
 
-Boid::Boid(const sf::Vector2f & size) : CircleShape()
+Boid::Boid(sf::Vector2f& pos, sf::Color& col) : CircleShape()
 {
-	// Initialise position and velocity of Boid to 0.0f.
-	position.x = 0.0f;
-	position.y = 0.0f;
-
+	// Initialise velocity of Boid to 0.0f.
 	velocity.x = 0.0f;
 	velocity.x = 0.0f;
 
@@ -13,12 +10,9 @@ Boid::Boid(const sf::Vector2f & size) : CircleShape()
 	setRadius(5.0f);
 	setPointCount(3);
 
-	setPosition(position);
-	float r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
-	float g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
-	float b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
+	setPosition(pos);
 	
-	setFillColor(sf::Color(r, g, b, 255.0f));
+	setFillColor(col);
 }
 
 Boid::~Boid()

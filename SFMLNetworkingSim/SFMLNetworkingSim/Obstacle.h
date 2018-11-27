@@ -8,7 +8,7 @@
 class Obstacle : public sf::CircleShape
 {
 public:
-	Obstacle(const sf::Vector2f & size = sf::Vector2f(0, 0));
+	Obstacle(sf::Vector2f pos);
 	~Obstacle();
 
 	void update(float dt);

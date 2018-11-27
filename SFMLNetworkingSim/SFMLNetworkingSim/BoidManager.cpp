@@ -5,18 +5,8 @@ BoidManager::BoidManager(sf::RenderWindow* hwnd, Input* in)
 	window = hwnd;
 	input = in;
 
-
-	srand(time(NULL));
-	for (int i = 0; i < NUM_BOIDS; i++)
-	{
-		Boids.push_back(Boid());
-	}
-
-	// Initialise boid positions
+	// Initialise boid positions and colours
 	initialisePositions();
-
-	// Initial fps value
-	fps = 0.0f;
 
 	// Set the speed
 	speed = 10.f;
@@ -37,12 +27,10 @@ BoidManager::~BoidManager()
 
 void BoidManager::update(float dt)
 {
-	fps = 1.0f / dt;
-
 	if (input->isMouseLeftDown())
 	{
 		input->setMouseLeftDown(false);
-		Obstacles.push_back(Obstacle(sf::Vector2f(input->getMouseX(),input->getMouseY())));
+		Obstacles.push_back(Obstacle(sf::Vector2f(input->getMouseX(), input->getMouseY())));
 	}
 
 	moveBoids(dt);
@@ -52,7 +40,7 @@ void BoidManager::update(float dt)
 		std::cout << "Boid X: " << b.getPosition().x << ", Boid Y: " << b.getPosition().y << std::endl;
 	}
 
-	outputText();
+	updateText();
 }
 
 void BoidManager::render(sf::RenderWindow * window)
@@ -70,7 +58,6 @@ void BoidManager::render(sf::RenderWindow * window)
 	}
 
 	// Render the text
-	window->draw(fpsText);
 	window->draw(boidSeparationText);
 }
 
@@ -96,16 +83,9 @@ void BoidManager::moveBoids(float dt)
 	}
 }
 
-// Output all crucial variables to the screen via text
-void BoidManager::outputText()
+// Update all text variables
+void BoidManager::updateText()
 {
-	// FPS text
-	fpsText.setFont(font);
-	fpsText.setCharacterSize(12);
-	fpsText.setString("FPS: " + std::to_string(fps));
-	fpsText.setFillColor(sf::Color::White);
-	fpsText.setPosition(window->getSize().x - 162, 0);
-
 	// Boid separation value text
 	boidSeparationText.setFont(font);
 	boidSeparationText.setCharacterSize(12);
@@ -117,13 +97,24 @@ void BoidManager::outputText()
 // Give initial positions to each boid.
 void BoidManager::initialisePositions()
 {
+	// Initialise random number generator
 	srand(time(NULL));
-	for (auto& b : Boids)
+
+	// Calculate random float from 0 - 255 for colour values of boids
+	float r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
+	float g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
+	float b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
+	sf::Color col(r, g, b, 255.0f);
+
+	for (int i = 0; i < NUM_BOIDS; i++)
 	{
+		// Caclulate random X & Y positions for each boid
 		float randX = (rand() % window->getSize().x);
 		float randY = (rand() % window->getSize().y);
 		sf::Vector2f newPos = sf::Vector2f(randX, randY);
-		b.setPosition(newPos);
+
+		// Add a new boid based on the position and colour generated
+		Boids.push_back(Boid(newPos, col));
 	}
 }
 

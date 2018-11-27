@@ -1,13 +1,13 @@
 #include "Obstacle.h"
 
-Obstacle::Obstacle(const sf::Vector2f & size) : CircleShape()
+Obstacle::Obstacle(sf::Vector2f pos) : CircleShape()
 {
 	// Set shape of boid
 	setRadius(10.0f);
 
 	// Initialise position to 0.0f.
-	position.x = size.x - getRadius();
-	position.y = size.y - getRadius();
+	position.x = pos.x - getRadius();
+	position.y = pos.y - getRadius();
 
 	setPosition(position);
 	setFillColor(sf::Color::Red);

@@ -24,7 +24,7 @@ private:
 	Input* input;
 
 	// Functions
-	void outputText();
+	void updateText();
 	void initialisePositions();
 	void moveBoids(float dt);
 	void limitVelocity(Boid& b, float dt);
@@ -37,13 +37,12 @@ private:
 
 	// Text & Font
 	sf::Font font;
-	sf::Text fpsText;
 	sf::Text boidSeparationText;
 
 	// Entity setup
 	std::list<Boid> Boids;
 	std::list<Obstacle> Obstacles;
-	int fps;
+	
 	float speed;
 	int separationValue;
 };

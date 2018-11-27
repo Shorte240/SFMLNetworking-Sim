@@ -25,8 +25,14 @@ private:
 	sf::View* view;
 	Input* input;
 
+	// Functions
+	void updateText();
+	
+
 	// Text setup
 	sf::Font font;
+	int fps;
+	sf::Text fpsText;
 
 	// Server setup
 	Server server;
