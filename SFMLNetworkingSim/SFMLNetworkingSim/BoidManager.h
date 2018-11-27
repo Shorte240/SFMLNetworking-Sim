@@ -15,7 +15,7 @@ public:
 	BoidManager(sf::RenderWindow* hwnd, Input* in);
 	~BoidManager();
 
-	void update(float dt);
+	void update(float dt, std::list<Obstacle>& obs);
 	void render(sf::RenderWindow* window);
 
 private:
@@ -26,22 +26,21 @@ private:
 	// Functions
 	void updateText();
 	void initialisePositions();
-	void moveBoids(float dt);
+	void moveBoids(float dt, std::list<Obstacle>& obs);
 	void limitVelocity(Boid& b, float dt);
 	sf::Vector2f moveTowardsGroup(Boid& b, float dt);
 	sf::Vector2f distanceCheck(Boid& b, float dt);
 	sf::Vector2f matchVelocity(Boid& b, float dt);
 	sf::Vector2f seekPlace(Boid& b, float dt, sf::Vector2f place);
 	sf::Vector2f boundPositions(Boid& b, float dt);
-	sf::Vector2f avoidPlace(Boid& b, float dt);
+	sf::Vector2f avoidPlace(Boid& b, float dt, std::list<Obstacle>& obs);
 
 	// Text & Font
 	sf::Font font;
 	sf::Text boidSeparationText;
 
 	// Entity setup
-	std::list<Boid> Boids;
-	std::list<Obstacle> Obstacles;
+	std::list<Boid> boidFlock;
 	
 	float speed;
 	int separationValue;

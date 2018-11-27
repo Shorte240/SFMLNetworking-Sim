@@ -8,7 +8,7 @@ BoidManager::BoidManager(sf::RenderWindow* hwnd, Input* in)
 	// Initialise boid positions and colours
 	initialisePositions();
 
-	// Set the speed
+	// Set the boid speed
 	speed = 10.f;
 
 	// Set the distance boids are spaced apart
@@ -25,19 +25,13 @@ BoidManager::~BoidManager()
 {
 }
 
-void BoidManager::update(float dt)
+void BoidManager::update(float dt, std::list<Obstacle>& obs)
 {
-	if (input->isMouseLeftDown())
-	{
-		input->setMouseLeftDown(false);
-		Obstacles.push_back(Obstacle(sf::Vector2f(input->getMouseX(), input->getMouseY())));
-	}
+	moveBoids(dt, obs);
 
-	moveBoids(dt);
-
-	for (auto& b : Boids)
+	for (auto& boid : boidFlock)
 	{
-		std::cout << "Boid X: " << b.getPosition().x << ", Boid Y: " << b.getPosition().y << std::endl;
+		std::cout << "Boid X: " << boid.getPosition().x << ", Boid Y: " << boid.getPosition().y << std::endl;
 	}
 
 	updateText();
@@ -46,15 +40,9 @@ void BoidManager::update(float dt)
 void BoidManager::render(sf::RenderWindow * window)
 {
 	// Draw all the boids
-	for (auto& b : Boids)
+	for (auto& boid : boidFlock)
 	{
-		window->draw(b);
-	}
-
-	// Draw the obstacle
-	for (auto& o : Obstacles)
-	{
-		window->draw(o);
+		window->draw(boid);
 	}
 
 	// Render the text
@@ -62,24 +50,24 @@ void BoidManager::render(sf::RenderWindow * window)
 }
 
 // Move all the boids according to the rules.
-void BoidManager::moveBoids(float dt)
+void BoidManager::moveBoids(float dt, std::list<Obstacle>& obs)
 {
 	sf::Vector2f v1, v2, v3, v4, v5, v6;
 
-	for (auto& b : Boids)
+	for (auto& boid : boidFlock)
 	{
-		v1 = moveTowardsGroup(b, dt);
-		v2 = distanceCheck(b, dt);
-		v3 = matchVelocity(b, dt);
-		v4 = seekPlace(b, dt, sf::Vector2f(input->getMouseX(), input->getMouseY()));
-		v5 = boundPositions(b, dt);
-		v6 = avoidPlace(b, dt);
+		v1 = moveTowardsGroup(boid, dt);
+		v2 = distanceCheck(boid, dt);
+		v3 = matchVelocity(boid, dt);
+		v4 = seekPlace(boid, dt, sf::Vector2f(input->getMouseX(), input->getMouseY()));
+		v5 = boundPositions(boid, dt);
+		v6 = avoidPlace(boid, dt, obs);
 
-		b.setBoidVelocity(b.getBoidVelocity() + v1 + v2 + v3 + v4 + v5 + v6);
-		b.move(b.getBoidVelocity() * speed * dt);
-		limitVelocity(b, dt);
-		float angle = (atan2(b.getBoidVelocity().x, -b.getBoidVelocity().y) * 180 / 3.1415);
-		b.setRotation(angle);
+		boid.setBoidVelocity(boid.getBoidVelocity() + v1 + v2 + v3 + v4 + v5 + v6);
+		boid.move(boid.getBoidVelocity() * speed * dt);
+		limitVelocity(boid, dt);
+		float angle = (atan2(boid.getBoidVelocity().x, -boid.getBoidVelocity().y) * 180 / 3.1415);
+		boid.setRotation(angle);
 	}
 }
 
@@ -114,7 +102,7 @@ void BoidManager::initialisePositions()
 		sf::Vector2f newPos = sf::Vector2f(randX, randY);
 
 		// Add a new boid based on the position and colour generated
-		Boids.push_back(Boid(newPos, col));
+		boidFlock.push_back(Boid(newPos, col));
 	}
 }
 
@@ -124,11 +112,11 @@ sf::Vector2f BoidManager::moveTowardsGroup(Boid& bj, float dt)
 	// Move the boid towards the perceivedCentre
 	sf::Vector2f perceivedCentre;
 
-	for (auto& b: Boids)
+	for (auto& boid: boidFlock)
 	{
-		if (b.getPosition() != bj.getPosition())
+		if (boid.getPosition() != bj.getPosition())
 		{
-			perceivedCentre = perceivedCentre + b.getPosition();
+			perceivedCentre = perceivedCentre + boid.getPosition();
 		}
 	}
 
@@ -164,15 +152,15 @@ sf::Vector2f BoidManager::distanceCheck(Boid& bj, float dt)
 		separationValue = separationValue;
 	}
 
-	for (auto& b : Boids)
+	for (auto& boid : boidFlock)
 	{
-		if (b.getPosition() != bj.getPosition())
+		if (boid.getPosition() != bj.getPosition())
 		{
-			if (abs(b.getPosition().x - bj.getPosition().x) < separationValue)
+			if (abs(boid.getPosition().x - bj.getPosition().x) < separationValue)
 			{
-				if (abs(b.getPosition().y - bj.getPosition().y) < separationValue)
+				if (abs(boid.getPosition().y - bj.getPosition().y) < separationValue)
 				{
-					currentDistance = currentDistance - (b.getPosition() - bj.getPosition());
+					currentDistance = currentDistance - (boid.getPosition() - bj.getPosition());
 				}
 			}
 		}
@@ -186,11 +174,11 @@ sf::Vector2f BoidManager::matchVelocity(Boid& bj, float dt)
 {
 	sf::Vector2f perceivedVelocity;
 
-	for (auto& b : Boids)
+	for (auto& boid : boidFlock)
 	{
-		if (b.getPosition() != bj.getPosition())
+		if (boid.getPosition() != bj.getPosition())
 		{
-			perceivedVelocity = perceivedVelocity + b.getBoidVelocity();
+			perceivedVelocity = perceivedVelocity + boid.getBoidVelocity();
 		}
 	}
 
@@ -254,21 +242,21 @@ sf::Vector2f BoidManager::boundPositions(Boid & bj, float dt)
 }
 
 // Rule 7: Tendency away from a particular place.
-sf::Vector2f BoidManager::avoidPlace(Boid & bj, float dt)
+sf::Vector2f BoidManager::avoidPlace(Boid & bj, float dt, std::list<Obstacle>& obs)
 {
 	sf::Vector2f v;
 	float m = 100.0f;
 	sf::Vector2f place;
 	float dist = 50.0f;
 
-	for (auto& o : Obstacles)
+	for (auto& obstacle : obs)
 	{
-		if (abs(bj.getPosition().x - o.getPosition().x) < dist)
+		if (abs(bj.getPosition().x - obstacle.getPosition().x) < dist)
 		{
-			if (abs(bj.getPosition().y - o.getPosition().y) < dist)
+			if (abs(bj.getPosition().y - obstacle.getPosition().y) < dist)
 			{
-				place.x = o.getPosition().x;
-				place.y = o.getPosition().y;
+				place.x = obstacle.getPosition().x;
+				place.y = obstacle.getPosition().y;
 				v = -m * seekPlace(bj, dt, place);
 			}
 		}

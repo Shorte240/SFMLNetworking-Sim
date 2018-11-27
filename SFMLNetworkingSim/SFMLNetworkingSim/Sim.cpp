@@ -8,8 +8,11 @@ Sim::Sim(sf::RenderWindow* hwnd, Input* in)
 	// Initial fps value
 	fps = 0.0f;
 
-	// Initialise new boid manager-
+	// Initialise new boid manager
 	boidManager = new BoidManager(window, input);
+
+	// Initialise new obstacle manager
+	obstacleManager = new ObstacleManager(window, input);
 
 	// Set up font
 	if (!font.loadFromFile("font/arial.ttf"))
@@ -31,8 +34,11 @@ void Sim::update(float dt)
 	// Calculate FPS
 	fps = 1.0f / dt;
 
+	// Update obstacle manager
+	obstacleManager->update(dt);
+
 	// Update boid manager
-	boidManager->update(dt);
+	boidManager->update(dt, obstacleManager->getObstacles());
 
 	// Update all the text variables
 	updateText();
@@ -41,6 +47,9 @@ void Sim::update(float dt)
 void Sim::render()
 {
 	beginDraw();
+
+	// Draw obstacles in obstacle manager
+	obstacleManager->render(window);
 
 	// Draw boids in boid manager
 	boidManager->render(window);

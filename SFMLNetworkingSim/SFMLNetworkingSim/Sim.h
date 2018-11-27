@@ -6,6 +6,7 @@
 #include "Server.h"
 #include "Client.h"
 #include "BoidManager.h"
+#include "ObstacleManager.h"
 
 class Sim
 {
@@ -40,6 +41,7 @@ private:
 
 	// Entity Setup
 	BoidManager* boidManager;
+	ObstacleManager* obstacleManager;
 
 	// Draw functions
 	void beginDraw();
