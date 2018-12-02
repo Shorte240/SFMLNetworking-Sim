@@ -31,8 +31,6 @@ Client::~Client()
 
 void Client::update(float dt)
 {
-	talk_to_server_udp(clientSocket);
-
 	totalTime += dt;
 
 	// Update obstacle manager
@@ -49,6 +47,8 @@ void Client::update(float dt)
 			boidManagers->update(dt, obsManagers->getObstacles());
 		}
 	}
+
+	talk_to_server_udp(clientSocket);
 }
 
 void Client::render(sf::RenderWindow * window)
@@ -111,9 +111,7 @@ void Client::udpClientSocketSetup()
 	// Set the client socket to non-blocking
 	clientSocket.setBlocking(false);
 
-
 	connectToUDPServer(clientSocket);
-	
 }
 
 void Client::connectToUDPServer(sf::UdpSocket & socket)

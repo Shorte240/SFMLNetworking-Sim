@@ -41,6 +41,7 @@ private:
 	// Background setup
 	sf::RenderWindow* window;
 	Input* input;
+	bool recv;
 
 	// Server setup
 	sf::UdpSocket serverSocket;

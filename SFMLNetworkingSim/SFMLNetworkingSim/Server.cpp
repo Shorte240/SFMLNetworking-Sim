@@ -17,6 +17,8 @@ Server::Server(sf::RenderWindow* hwnd, Input* in)
 	allObstacleManagers.push_back(serverObstacleManager);
 
 	udpServerSocketSetup();
+
+	recv = false;
 }
 
 
@@ -29,6 +31,9 @@ Server::~Server()
 
 void Server::update(float dt)
 {
+	//printf("Waiting for a message...\n");
+	talk_to_client_udp(serverSocket);
+
 	// Update obstacle manager
 	for (auto obsManagers : allObstacleManagers)
 	{
@@ -43,9 +48,6 @@ void Server::update(float dt)
 			boidManagers->update(dt, obsManagers->getObstacles());
 		}
 	}
-
-	printf("Waiting for a message...\n");
-	talk_to_client_udp(serverSocket);
 }
 
 void Server::render(sf::RenderWindow * window)
@@ -175,11 +177,10 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 
 	// UDP socket:
 	sf::IpAddress sender;
-	unsigned short port = SERVERPORT;
+	unsigned short port;
 
 	if (clientSocket.receive(receivePacket, sender, port) == sf::Socket::Done)
 	{
-
 		int msgType;
 		
 		if (receivePacket >> msgType)
@@ -194,19 +195,24 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 				conn->ID = connections.size();
 
 				connections.push_back(conn);
+				std::cout << "Client: " << connections.size() << " has connected." << std::endl
 			}
 			break;
 			case BoidCount:
-				int count;
-				receivePacket >> count;
-				for (int i = 0; i < count; i++)
+				if (!recv)
 				{
-					BoidData boidData(0,0,0,0);
-					receivePacket >> boidData.positionX;
-					receivePacket >> boidData.positionY;
-					receivePacket >> boidData.velocityX;
-					receivePacket >> boidData.velocityY;
-					serverBoidManager->addBoidToFlock(boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY);
+					int count;
+					receivePacket >> count;
+					for (int i = 0; i < count; i++)
+					{
+						BoidData boidData(0,0,0,0);
+						receivePacket >> boidData.positionX;
+						receivePacket >> boidData.positionY;
+						receivePacket >> boidData.velocityX;
+						receivePacket >> boidData.velocityY;
+						serverBoidManager->addBoidToFlock(boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY);
+					}
+					recv = true;
 				}
 				break;
 			case ObstacleCount:
@@ -222,7 +228,7 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 	}
 	else
 	{
-		printf("Nothing received\n");
+		//printf("Nothing received\n");
 	}
 
 	// UDP socket:

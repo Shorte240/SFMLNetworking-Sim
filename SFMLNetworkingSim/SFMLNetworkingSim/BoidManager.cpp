@@ -53,25 +53,25 @@ void BoidManager::addBoidToFlock(float posX, float posY, float velX, float velY)
 {
 	sf::Vector2f newPos = sf::Vector2f(posX, posY);
 	sf::Vector2f newVel = sf::Vector2f(velX, velY);
-	sf::Color col = sf::Color(255, 255, 255, 255);
+	sf::Color col = sf::Color(255, 255, 0, 255);
 	boidFlock.push_back(Boid(newPos, newVel, col));
 }
 
 // Move all the boids according to the rules.
 void BoidManager::moveBoids(float dt, std::list<Obstacle>& obs)
 {
-	sf::Vector2f v1, v2, v3, v4, /*v5,*/ v6;
+	sf::Vector2f v1, v2, v3,/*v4, /*v5,*/ v6;
 
 	for (auto& boid : boidFlock)
 	{
 		v1 = moveTowardsGroup(boid, dt);
 		v2 = distanceCheck(boid, dt);
 		v3 = matchVelocity(boid, dt);
-		v4 = seekPlace(boid, dt, sf::Vector2f(input->getMouseX(), input->getMouseY()));
+		//v4 = seekPlace(boid, dt, sf::Vector2f(input->getMouseX(), input->getMouseY()));
 		//v5 = boundPositions(boid, dt);
 		v6 = avoidPlace(boid, dt, obs);
 
-		boid.setBoidVelocity(boid.getBoidVelocity() + v1 + v2 + v3 + v4 + /*v5 +*/ v6);
+		boid.setBoidVelocity(boid.getBoidVelocity() + v1 + v2 + v3 + /*v4 + v5 +*/ v6);
 		boid.move(boid.getBoidVelocity() * speed * dt);
 		limitVelocity(boid, dt);
 		positionWindowWrapping(boid, dt);
