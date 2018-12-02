@@ -1,13 +1,60 @@
 #include "Server.h"
 
 
-Server::Server()
+Server::Server(sf::RenderWindow* hwnd, Input* in)
 {
+	window = hwnd;
+	input = in;
+
+	// Initialise new boid manager
+	serverBoidManager = new BoidManager(window, input);
+
+	allBoidManagers.push_back(serverBoidManager);
+
+	// Initialise new obstacle manager
+	serverObstacleManager = new ObstacleManager(window, input);
+
+	allObstacleManagers.push_back(serverObstacleManager);
+
+	//udpServer();
 }
 
 
 Server::~Server()
 {
+}
+
+void Server::update(float dt)
+{
+	// Update obstacle manager
+	for (auto obsManagers : allObstacleManagers)
+	{
+		obsManagers->update(dt);		
+	}
+
+	// Update boid manager
+	for (auto boidManagers : allBoidManagers)
+	{
+		for (auto obsManagers : allObstacleManagers)
+		{
+			boidManagers->update(dt, obsManagers->getObstacles());
+		}
+	}
+}
+
+void Server::render(sf::RenderWindow * window)
+{
+	// Draw obstacles in obstacle manager
+	for (auto obsManagers : allObstacleManagers)
+	{
+		obsManagers->render(window);
+	}
+
+	// Draw boids in boid manager
+	for (auto boidManagers : allBoidManagers)
+	{
+		boidManagers->render(window);
+	}
 }
 
 void Server::tcpServer()

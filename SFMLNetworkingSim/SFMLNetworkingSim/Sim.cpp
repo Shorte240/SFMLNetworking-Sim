@@ -8,24 +8,26 @@ Sim::Sim(sf::RenderWindow* hwnd, Input* in)
 	// Initial fps value
 	fps = 0.0f;
 
-	// Initialise new boid manager
-	boidManager = new BoidManager(window, input);
-
-	// Initialise new obstacle manager
-	obstacleManager = new ObstacleManager(window, input);
-
 	// Set up font
 	if (!font.loadFromFile("font/arial.ttf"))
 	{
 		std::cout << "Font can't load" << std::endl;
 	}
+
+	// Set up server
+	server = new Server(window, input);
+
+	// Set up client
+	client = new Client(window, input);
+
+	isServer = false;
+	isClient = false;
+
+	// Choice text
+	std::cout << "Press '1' for Server , '2' for Client." << std::endl;
 }
 
 Sim::~Sim()
-{
-}
-
-void Sim::handleInput(float dt)
 {
 }
 
@@ -34,11 +36,36 @@ void Sim::update(float dt)
 	// Calculate FPS
 	fps = 1.0f / dt;
 
-	// Update obstacle manager
-	obstacleManager->update(dt);
+	if (!isClient && !isServer)
+	{
+		if (input->isKeyDown(sf::Keyboard::Num1))
+		{
+			input->setKeyUp(sf::Keyboard::Num1);
+			isServer = true;			
+		}
+	}
 
-	// Update boid manager
-	boidManager->update(dt, obstacleManager->getObstacles());
+	if (!isServer && !isClient)
+	{
+		if (input->isKeyDown(sf::Keyboard::Num2))
+		{
+			input->setKeyUp(sf::Keyboard::Num2);
+			isClient = true;
+			
+		}
+	}
+
+	if (isServer)
+	{
+		// Update server
+		server->update(dt);
+	}
+
+	if (isClient)
+	{
+		// Update client
+		client->update(dt);
+	}
 
 	// Update all the text variables
 	updateText();
@@ -48,11 +75,17 @@ void Sim::render()
 {
 	beginDraw();
 
-	// Draw obstacles in obstacle manager
-	obstacleManager->render(window);
+	if (isServer)
+	{
+		// Render server stuff
+		server->render(window);
+	}
 
-	// Draw boids in boid manager
-	boidManager->render(window);
+	if (isClient)
+	{
+		// Render client stuff
+		client->render(window);
+	}
 
 	// Draw FPS text
 	window->draw(fpsText);
@@ -71,7 +104,7 @@ void Sim::updateText()
 	fpsText.setCharacterSize(12);
 	fpsText.setString("FPS: " + std::to_string(fps));
 	fpsText.setFillColor(sf::Color::White);
-	fpsText.setPosition(window->getSize().x - 162, 0);
+	fpsText.setPosition(window->getSize().x - 162, 0);	
 }
 
 void Sim::beginDraw()

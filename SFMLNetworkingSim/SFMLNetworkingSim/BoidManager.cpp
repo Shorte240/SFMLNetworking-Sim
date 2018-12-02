@@ -132,17 +132,17 @@ sf::Vector2f BoidManager::distanceCheck(Boid& bj, float dt)
 {
 	sf::Vector2f currentDistance = sf::Vector2f(0.0f, 0.0f);
 
-	if (input->isKeyDown(sf::Keyboard::A))
+	if (input->isKeyDown(sf::Keyboard::S))
 	{
-		input->setKeyUp(sf::Keyboard::A);
+		input->setKeyUp(sf::Keyboard::S);
 		if (separationValue > 1)
 		{
 			separationValue -= 1;
 		}
 	}
-	else if (input->isKeyDown(sf::Keyboard::Q))
+	else if (input->isKeyDown(sf::Keyboard::W))
 	{
-		input->setKeyUp(sf::Keyboard::Q);
+		input->setKeyUp(sf::Keyboard::W);
 		if (separationValue < 100)
 		{
 			separationValue += 1;

@@ -5,8 +5,6 @@
 #include "Includes.h"
 #include "Server.h"
 #include "Client.h"
-#include "BoidManager.h"
-#include "ObstacleManager.h"
 
 class Sim
 {
@@ -15,7 +13,6 @@ public:
 	~Sim();
 
 	// Functions
-	void handleInput(float dt);
 	void update(float dt);
 	void render();
 	void reset();
@@ -23,7 +20,6 @@ public:
 private:
 	// Background setup
 	sf::RenderWindow* window;
-	sf::View* view;
 	Input* input;
 
 	// Functions
@@ -35,15 +31,15 @@ private:
 	sf::Text fpsText;
 
 	// Network setup
-	Server server;
-	Client client;
-
-	// Entity Setup
-	BoidManager* boidManager;
-	ObstacleManager* obstacleManager;
+	Server* server;
+	Client* client;
 
 	// Draw functions
 	void beginDraw();
 	void endDraw();
+
+	// Vars
+	bool isServer;
+	bool isClient;
 };
 

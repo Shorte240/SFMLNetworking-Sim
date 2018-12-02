@@ -3,6 +3,8 @@
 #pragma once
 
 #include "Includes.h"
+#include "BoidManager.h"
+#include "ObstacleManager.h"
 
 // The IP address for the server
 #define SERVERIP "127.0.0.1"
@@ -17,9 +19,14 @@
 class Server
 {
 public:
-	Server();
+	Server(sf::RenderWindow* hwnd, Input *input);
 	~Server();
 
+	// Functions
+	void update(float dt);
+	void render(sf::RenderWindow* window);
+
+protected:
 	// Server set-up, TCP or UDP
 	void tcpServer();
 	void udpServer();
@@ -30,5 +37,17 @@ public:
 
 	// NEED TO FIND BETTER WAY TO HANDLE ERRORS
 	void die(const char *message);
+
+private:
+	// Background setup
+	sf::RenderWindow* window;
+	Input* input;
+
+	// Entity Setup
+	BoidManager* serverBoidManager;
+	ObstacleManager* serverObstacleManager;
+
+	std::list<BoidManager*> allBoidManagers;
+	std::list<ObstacleManager*> allObstacleManagers;
 };
 

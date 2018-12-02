@@ -1,13 +1,59 @@
 #include "Client.h"
 
 
-Client::Client()
+Client::Client(sf::RenderWindow* hwnd, Input* in)
 {
-}
+	window = hwnd;
+	input = in;
 
+	// Initialise new boid manager
+	clientBoidManager = new BoidManager(window, input);
+
+	allBoidManagers.push_back(clientBoidManager);
+
+	// Initialise new obstacle manager
+	clientObstacleManager = new ObstacleManager(window, input);
+
+	allObstacleManagers.push_back(clientObstacleManager);
+
+	//udpClient();
+}
 
 Client::~Client()
 {
+}
+
+void Client::update(float dt)
+{
+	// Update obstacle manager
+	for (auto obsManagers : allObstacleManagers)
+	{
+		obsManagers->update(dt);
+	}
+
+	// Update boid manager
+	for (auto boidManagers : allBoidManagers)
+	{
+		for (auto obsManagers : allObstacleManagers)
+		{
+			boidManagers->update(dt, obsManagers->getObstacles());
+		}
+	}
+}
+
+void Client::render(sf::RenderWindow * window)
+{
+	// Draw obstacles in obstacle manager
+	for (auto obsManagers : allObstacleManagers)
+	{
+		obsManagers->render(window);
+	}
+
+	// Draw boids in boid manager
+	for (auto boidManagers : allBoidManagers)
+	{
+		boidManagers->render(window);
+	}
 }
 
 void Client::tcpClient()
