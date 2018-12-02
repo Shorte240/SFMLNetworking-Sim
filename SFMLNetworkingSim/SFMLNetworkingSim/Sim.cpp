@@ -14,12 +14,6 @@ Sim::Sim(sf::RenderWindow* hwnd, Input* in)
 		std::cout << "Font can't load" << std::endl;
 	}
 
-	// Set up server
-	server = new Server(window, input);
-
-	// Set up client
-	client = new Client(window, input);
-
 	isServer = false;
 	isClient = false;
 
@@ -41,7 +35,9 @@ void Sim::update(float dt)
 		if (input->isKeyDown(sf::Keyboard::Num1))
 		{
 			input->setKeyUp(sf::Keyboard::Num1);
-			isServer = true;			
+			isServer = true;
+			// Set up server
+			server = new Server(window, input);
 		}
 	}
 
@@ -51,7 +47,8 @@ void Sim::update(float dt)
 		{
 			input->setKeyUp(sf::Keyboard::Num2);
 			isClient = true;
-			
+			// Set up client
+			client = new Client(window, input);
 		}
 	}
 

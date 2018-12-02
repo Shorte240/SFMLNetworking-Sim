@@ -29,10 +29,10 @@ void BoidManager::update(float dt, std::list<Obstacle>& obs)
 {
 	moveBoids(dt, obs);
 
-	for (auto& boid : boidFlock)
+	/*for (auto& boid : boidFlock)
 	{
 		std::cout << "Boid X: " << boid.getPosition().x << ", Boid Y: " << boid.getPosition().y << std::endl;
-	}
+	}*/
 
 	updateText();
 }
@@ -47,6 +47,14 @@ void BoidManager::render(sf::RenderWindow * window)
 
 	// Render the text
 	window->draw(boidSeparationText);
+}
+
+void BoidManager::addBoidToFlock(float posX, float posY, float velX, float velY)
+{
+	sf::Vector2f newPos = sf::Vector2f(posX, posY);
+	sf::Vector2f newVel = sf::Vector2f(velX, velY);
+	sf::Color col = sf::Color(255, 255, 255, 255);
+	boidFlock.push_back(Boid(newPos, newVel, col));
 }
 
 // Move all the boids according to the rules.
@@ -101,9 +109,10 @@ void BoidManager::initialisePositions()
 		float randX = (rand() % window->getSize().x);
 		float randY = (rand() % window->getSize().y);
 		sf::Vector2f newPos = sf::Vector2f(randX, randY);
+		sf::Vector2f newVel = sf::Vector2f(0.0f, 0.0f);
 
 		// Add a new boid based on the position and colour generated
-		boidFlock.push_back(Boid(newPos, col));
+		boidFlock.push_back(Boid(newPos, newVel, col));
 	}
 }
 

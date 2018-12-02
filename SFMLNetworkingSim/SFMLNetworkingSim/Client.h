@@ -3,8 +3,7 @@
 #pragma once
 
 #include "Includes.h"
-#include "BoidManager.h"
-#include "ObstacleManager.h"
+#include "Connection.h"
 
 // The IP address of the server to connect to
 #define SERVERIP "127.0.0.1"
@@ -27,7 +26,8 @@ public:
 
 protected:
 	void tcpClient();
-	void udpClient();
+	void udpClientSocketSetup();
+	void connectToUDPServer(sf::UdpSocket& socket);
 	void talk_to_server_tcp(sf::TcpSocket& socket);
 	void talk_to_server_udp(sf::UdpSocket& socket);
 	void die(const char *message);
@@ -37,11 +37,18 @@ private:
 	sf::RenderWindow* window;
 	Input* input;
 
+	// Client setup
+	sf::UdpSocket clientSocket;
+
 	// Entity Setup
 	BoidManager* clientBoidManager;
 	ObstacleManager* clientObstacleManager;
 
-	std::list<BoidManager*> allBoidManagers;
-	std::list<ObstacleManager*> allObstacleManagers;
+	std::vector<BoidManager*> allBoidManagers;
+	std::vector<ObstacleManager*> allObstacleManagers;
+
+	// Vars
+	float totalTime;
+	int clientID;
 };
 

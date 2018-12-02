@@ -18,8 +18,9 @@ public:
 	void update(float dt, std::list<Obstacle>& obs);
 	void render(sf::RenderWindow* window);
 
+	void addBoidToFlock(float posX, float posY, float velX, float velY);
 	// Get the list of boids
-	std::list<Boid>& getBoidFlock() { return boidFlock; };
+	std::vector<Boid>& getBoidFlock() { return boidFlock; };
 
 private:
 	// Variables
@@ -44,7 +45,7 @@ private:
 	sf::Text boidSeparationText;
 
 	// Entity setup
-	std::list<Boid> boidFlock;
+	std::vector<Boid> boidFlock;
 	
 	float speed;
 	int separationValue;

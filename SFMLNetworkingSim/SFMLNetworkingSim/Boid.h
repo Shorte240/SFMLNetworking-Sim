@@ -8,7 +8,7 @@
 class Boid : public sf::CircleShape
 {
 public:
-	Boid(sf::Vector2f& pos, sf::Color& col);
+	Boid(sf::Vector2f& pos, sf::Vector2f& vel, sf::Color& col);
 	~Boid();
 
 	void update(float dt);

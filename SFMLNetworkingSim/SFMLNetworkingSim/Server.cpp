@@ -16,12 +16,15 @@ Server::Server(sf::RenderWindow* hwnd, Input* in)
 
 	allObstacleManagers.push_back(serverObstacleManager);
 
-	//udpServer();
+	udpServerSocketSetup();
 }
 
 
 Server::~Server()
 {
+	// We won't actually get here, but if we did then we'd want to clean up...
+	printf("Quitting\n");
+	serverSocket.unbind();
 }
 
 void Server::update(float dt)
@@ -40,6 +43,9 @@ void Server::update(float dt)
 			boidManagers->update(dt, obsManagers->getObstacles());
 		}
 	}
+
+	printf("Waiting for a message...\n");
+	talk_to_client_udp(serverSocket);
 }
 
 void Server::render(sf::RenderWindow * window)
@@ -106,32 +112,22 @@ void Server::tcpServer()
 }
 
 // Run a server using UDP sockets.
-void Server::udpServer()
+void Server::udpServerSocketSetup()
 {
 	printf("Echo UDP SFML Server\n");
 
-	sf::UdpSocket socket;
-
 	// bind the socket to a port
-	if (socket.bind(SERVERPORT, SERVERIP) != sf::Socket::Done)
+	if (serverSocket.bind(SERVERPORT, SERVERIP) != sf::Socket::Done)
 	{
 		// error...
 		die("bind failed");
 	}
 
+	// Set the server socket to non-blocking
+	serverSocket.setBlocking(false);
+
 	// Print IP and Port the server is bound to
 	printf("Server socket bound to address %s, port %d\n", SERVERIP, SERVERPORT);
-
-	while (true)
-	{
-		printf("Waiting for a message...\n");
-
-		talk_to_client_udp(socket);
-	}
-
-	// We won't actually get here, but if we did then we'd want to clean up...
-	printf("Quitting\n");
-	socket.unbind();
 }
 
 void Server::talk_to_client_tcp(sf::TcpSocket & clientSocket)
@@ -172,42 +168,69 @@ void Server::talk_to_client_tcp(sf::TcpSocket & clientSocket)
 
 void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 {
-	std::string s;
+	// Receive data
+	sf::Packet receivePacket;
 
-	while (s != "quit")
+	std::size_t received;
+
+	// UDP socket:
+	sf::IpAddress sender;
+	unsigned short port = SERVERPORT;
+
+	if (clientSocket.receive(receivePacket, sender, port) == sf::Socket::Done)
 	{
-		// Receive data
-		sf::Packet packet;
 
-		std::size_t received;
+		int msgType;
+		
+		if (receivePacket >> msgType)
+		{
+			switch (msgType)
+			{
+			case Connect:
+			{
+				Connection * conn = new Connection();
+				conn->connectionAddress = SERVERIP;
+				conn->connectionPort = port;
+				conn->ID = connections.size();
 
-		// UDP socket:
-		sf::IpAddress sender;
-		unsigned short port;
+				connections.push_back(conn);
+			}
+			break;
+			case BoidCount:
+				int count;
+				receivePacket >> count;
+				for (int i = 0; i < count; i++)
+				{
+					BoidData boidData(0,0,0,0);
+					receivePacket >> boidData.positionX;
+					receivePacket >> boidData.positionY;
+					receivePacket >> boidData.velocityX;
+					receivePacket >> boidData.velocityY;
+					serverBoidManager->addBoidToFlock(boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY);
+				}
+				break;
+			case ObstacleCount:
+				break;
+			case ObstaclePositionData:
+				break;
+			case Disconnect:
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	else
+	{
+		printf("Nothing received\n");
+	}
 
-		if (clientSocket.receive(packet, sender, port) != sf::Socket::Done)
-		{
-			// error...
-			die("receive failed");
-		}
-		if (packet >> s)
-		{
-			// ok
-			std::cout << "Received " << packet.getDataSize() << " bytes from " << sender << " on port " << port << std::endl;
-			std::cout << "'" << s << "'" << std::endl;
-		}
-		else
-		{
-			// die
-		}
-
-		// UDP socket:
-		sf::IpAddress recipient = SERVERIP;
-		if (clientSocket.send(packet, recipient, port) != sf::Socket::Done)
-		{
-			// error...
-			die("sendto failed");
-		}
+	// UDP socket:
+	sf::IpAddress recipient = SERVERIP;
+	if (clientSocket.send(receivePacket, recipient, port) != sf::Socket::Done)
+	{
+		// error...
+		die("sendto failed");
 	}
 }
 

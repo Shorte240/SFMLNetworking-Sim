@@ -6,6 +6,9 @@ Client::Client(sf::RenderWindow* hwnd, Input* in)
 	window = hwnd;
 	input = in;
 
+	totalTime = 0.0f;
+	clientID = 0;
+
 	// Initialise new boid manager
 	clientBoidManager = new BoidManager(window, input);
 
@@ -16,15 +19,22 @@ Client::Client(sf::RenderWindow* hwnd, Input* in)
 
 	allObstacleManagers.push_back(clientObstacleManager);
 
-	//udpClient();
+	udpClientSocketSetup();
 }
 
 Client::~Client()
 {
+	//// We won't actually get here, but if we did then we'd want to clean up...
+	//printf("Quitting\n");
+	//clientSocket.unbind();
 }
 
 void Client::update(float dt)
 {
+	talk_to_server_udp(clientSocket);
+
+	totalTime += dt;
+
 	// Update obstacle manager
 	for (auto obsManagers : allObstacleManagers)
 	{
@@ -83,21 +93,51 @@ void Client::tcpClient()
 	socket.disconnect();
 }
 
-void Client::udpClient()
+void Client::udpClientSocketSetup()
 {
 	printf("Client UDP Program\n");
-
-	sf::UdpSocket socket;
 
 	// Print the IP and Port we're connecting to.
 	printf("IP address to send to:: %s\n", SERVERIP);
 	printf("Port number to send to: %d\n\n", SERVERPORT);
 
-	talk_to_server_udp(socket);
+	// bind the socket to a port
+	if (clientSocket.bind(sf::Socket::AnyPort, SERVERIP) != sf::Socket::Done)
+	{
+		// error...
+		die("bind failed");
+	}
 
-	// We won't actually get here, but if we did then we'd want to clean up...
-	printf("Quitting\n");
-	socket.unbind();
+	// Set the client socket to non-blocking
+	clientSocket.setBlocking(false);
+
+
+	connectToUDPServer(clientSocket);
+	
+}
+
+void Client::connectToUDPServer(sf::UdpSocket & socket)
+{
+	sf::Packet connectPacket;
+
+	NewConnection connectMsg;
+
+	connectMsg.messageType = Messages::Connect;
+	connectMsg.time = totalTime;
+	connectMsg.totalTime = totalTime;
+	connectMsg.playerID = clientID;
+
+	connectPacket
+		<< connectMsg.messageType
+		<< connectMsg.time
+		<< connectMsg.totalTime
+		<< connectMsg.playerID;
+
+	if (socket.send(connectPacket, SERVERIP, SERVERPORT) != sf::Socket::Done)
+	{
+		// error...
+		die("sendto failed");
+	}
 }
 
 void Client::talk_to_server_tcp(sf::TcpSocket & socket)
@@ -144,137 +184,64 @@ void Client::talk_to_server_tcp(sf::TcpSocket & socket)
 
 void Client::talk_to_server_udp(sf::UdpSocket & socket)
 {
-	// We'll use this buffer to hold what we receive from the server.
-	//char buffer[MESSAGESIZE];
+	sf::Packet sendPacket;
 
-	std::string s;
+	NumBoids numberOfBoids(clientBoidManager->getBoidFlock().size());
 
-	std::thread *send_thread, *recv_thread;
-	bool response_received = false;
+	numberOfBoids.messageType = Messages::BoidCount;
 
-	std::chrono::milliseconds time_track;
+	sendPacket << numberOfBoids.messageType;
+	sendPacket << numberOfBoids.numberOfBoids;
 
-	std::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now();
-	std::chrono::steady_clock::time_point end = start;
-
-	//while (memcmp(buffer, "quit", 4) != 0)
-	do
+	for (int i = 0; i < clientBoidManager->getBoidFlock().size(); i++)
 	{
-		printf("Type some text (\"quit\" to exit): ");
-		fflush(stdout);
+		BoidData boidData(clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y);
+		sendPacket << boidData.positionX;
+		sendPacket << boidData.positionY;
+		sendPacket << boidData.velocityX;
+		sendPacket << boidData.velocityY;
+	}
+	
+	// UDP socket:
+	sf::IpAddress recipient = SERVERIP;
+	unsigned short port = SERVERPORT;
 
-		// Read a line of text from the user.
-		sf::Packet packet;
+	if (socket.send(sendPacket, recipient, port) != sf::Socket::Done)
+	{
+		// error...
+		die("sendto failed");
+	}
 
-		std::string line;
-		std::getline(std::cin, line);
-		int lineSize = line.size();
-		// Now "line" contains what the user typed (without the trailing \n).
+	//// Simulate packet drop
+	//// Lose 40% of packets
+	//if ((rand() % 100) > 40)
+	//{
+	//	
+	//}
+	// Receive data
+	std::size_t received;
 
-		// Set packet contents to what user typed
-		packet << line;
+	// UDP socket:
+	sf::IpAddress sender;
+	unsigned short prt;
 
-		// Copy the line into the buffer, filling the rest with dashes.
-		// (We must be careful not to write past the end of the array.)
-		/*memset(buffer, '-', MESSAGESIZE);
-		memcpy(buffer, line.c_str(), std::min(lineSize, MESSAGESIZE));*/
-
-		response_received = false;
-		std::chrono::steady_clock::time_point end = std::chrono::high_resolution_clock::now();
-		std::chrono::steady_clock::time_point start = end;
-		time_track = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-		auto dur = std::chrono::milliseconds(200);
-		bool first_run = true;
-
-
-
-		send_thread = new std::thread([&]()
-		{
-			// UDP socket:
-			sf::IpAddress recipient = SERVERIP;
-			unsigned short port = SERVERPORT;
-			while (true)
-			{
-				if (response_received)
-				{
-					break;
-				}
-
-				time_track = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
-				if (time_track > dur || first_run)
-				{
-					first_run = false;
-					end = std::chrono::high_resolution_clock::now();
-					start = end;
-
-					// Simulate packet drop
-					// Lose 40% of packets
-					if ((rand() % 100) > 40)
-					{
-						//if (socket.send(buffer, MESSAGESIZE, recipient, port) != sf::Socket::Done)
-						//{
-						//	// error...
-						//	die("sendto failed");
-						//}
-						if (socket.send(packet, recipient, port) != sf::Socket::Done)
-						{
-							// error...
-							die("sendto failed");
-						}
-					}
-				}
-				std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-				end = std::chrono::high_resolution_clock::now();
-			}
-			printf("%dms passed.\n", time_track);
-		});
-
-
-
-		recv_thread = new std::thread([&]()
-		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
-			// Receive data
-			std::size_t received;
-
-			// UDP socket:
-			sf::IpAddress sender;
-			unsigned short prt;
-
-			//if (socket.receive(buffer, MESSAGESIZE, received, sender, prt) != sf::Socket::Done)
-			//{
-			//	// error...
-			//	die("receive failed");
-			//}
-			if (socket.receive(packet, sender, prt) != sf::Socket::Done)
-			{
-				// error...
-				die("receive failed");
-			}
-			if (packet >> s)
-			{
-				// ok
-				response_received = true;
-				std::cout << "Received " << packet.getDataSize() << " bytes from " << sender << " on port " << prt << std::endl;
-				std::cout << "'" << s << "'" << std::endl;
-			}
-			else
-			{
-				// die
-				std::cout << "packet broke yo" << std::endl;
-			}
-
-		});
-		/*std::cout << "Received " << received << " bytes from " << sender << " on port " << port << std::endl;
-		std::cout << "'";
-		fwrite(buffer, 1, MESSAGESIZE, stdout);
-		printf("'\n");*/
-
-		send_thread->join();
-		recv_thread->join();
-	} while (s != "quit");
+	//if (socket.receive(sendPacket, sender, prt) != sf::Socket::Done)
+	//{
+	//	// error...
+	//	die("receive failed");
+	//}
+	////if (packet >> clientData.allBoidManagers.begin()._Ptr->_Myval->getBoidFlock().begin()._Ptr->_Myval.setPosition()
+	////{
+	////	// ok
+	////	response_received = true;
+	////	std::cout << "Received " << packet.getDataSize() << " bytes from " << sender << " on port " << prt << std::endl;
+	////	std::cout << "'" << s << "'" << std::endl;
+	////}
+	//else
+	//{
+	//	// die
+	//	std::cout << "packet broke yo" << std::endl;
+	//}
 }
 
 void Client::die(const char * message)

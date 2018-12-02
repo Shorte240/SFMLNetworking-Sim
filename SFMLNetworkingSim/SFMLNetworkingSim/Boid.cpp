@@ -1,10 +1,10 @@
 #include "Boid.h"
 
-Boid::Boid(sf::Vector2f& pos, sf::Color& col) : CircleShape()
+Boid::Boid(sf::Vector2f& pos, sf::Vector2f& vel, sf::Color& col) : CircleShape()
 {
 	// Initialise velocity of Boid to 0.0f.
-	velocity.x = 0.0f;
-	velocity.x = 0.0f;
+	velocity.x = vel.x;
+	velocity.y = vel.y;
 
 	// Set shape of boid
 	setRadius(5.0f);
