@@ -49,6 +49,7 @@ private:
 
 	// Vars
 	float totalTime;
+	float tickTimer;
 	int clientID;
 };
 

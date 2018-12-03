@@ -42,6 +42,7 @@ private:
 	sf::RenderWindow* window;
 	Input* input;
 	bool recv;
+	float tickTimer;
 
 	// Server setup
 	sf::UdpSocket serverSocket;

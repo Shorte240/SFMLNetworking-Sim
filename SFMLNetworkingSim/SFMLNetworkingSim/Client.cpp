@@ -8,6 +8,7 @@ Client::Client(sf::RenderWindow* hwnd, Input* in)
 
 	totalTime = 0.0f;
 	clientID = 0;
+	tickTimer = 0.0f;
 
 	// Initialise new boid manager
 	clientBoidManager = new BoidManager(window, input);
@@ -32,6 +33,7 @@ Client::~Client()
 void Client::update(float dt)
 {
 	totalTime += dt;
+	tickTimer += dt;
 
 	// Update obstacle manager
 	for (auto obsManagers : allObstacleManagers)
@@ -48,7 +50,11 @@ void Client::update(float dt)
 		}
 	}
 
-	talk_to_server_udp(clientSocket);
+	if (tickTimer >= (1.0f / 64.0f))
+	{
+		tickTimer = 0.0f;
+		talk_to_server_udp(clientSocket);
+	}
 }
 
 void Client::render(sf::RenderWindow * window)
@@ -193,11 +199,24 @@ void Client::talk_to_server_udp(sf::UdpSocket & socket)
 
 	for (int i = 0; i < clientBoidManager->getBoidFlock().size(); i++)
 	{
-		BoidData boidData(clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y);
-		sendPacket << boidData.positionX;
-		sendPacket << boidData.positionY;
-		sendPacket << boidData.velocityX;
-		sendPacket << boidData.velocityY;
+		if (clientBoidManager->getBoidFlock()[i].getBoidID() == -1)
+		{
+			BoidData boidData(-1, clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y);
+			sendPacket << boidData.ID;
+			sendPacket << boidData.positionX;
+			sendPacket << boidData.positionY;
+			sendPacket << boidData.velocityX;
+			sendPacket << boidData.velocityY;
+		}
+		else if (clientBoidManager->getBoidFlock()[i].getBoidID() != -1)
+		{
+			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y);
+			sendPacket << boidData.ID;
+			sendPacket << boidData.positionX;
+			sendPacket << boidData.positionY;
+			sendPacket << boidData.velocityX;
+			sendPacket << boidData.velocityY;
+		}
 	}
 	
 	// UDP socket:
@@ -216,18 +235,62 @@ void Client::talk_to_server_udp(sf::UdpSocket & socket)
 	//{
 	//	
 	//}
-	// Receive data
-	std::size_t received;
+
+	sf::Packet receivePacket;
+	int msgType;
 
 	// UDP socket:
 	sf::IpAddress sender;
 	unsigned short prt;
 
-	//if (socket.receive(sendPacket, sender, prt) != sf::Socket::Done)
-	//{
-	//	// error...
-	//	die("receive failed");
-	//}
+	if (socket.receive(receivePacket, sender, prt) == sf::Socket::Done)
+	{
+		std::cout << "GOT INFO." << std::endl;
+		if (receivePacket >> msgType)
+		{
+			switch (msgType)
+			{
+			case Connect:
+				break;
+			case BoidCount:
+			{
+				int count;
+				receivePacket >> count;
+				BoidData boidData(0, 0, 0, 0, 0);
+				receivePacket >> boidData.ID;
+				receivePacket >> boidData.positionX;
+				receivePacket >> boidData.positionY;
+				receivePacket >> boidData.velocityX;
+				receivePacket >> boidData.velocityY;
+				for (int i = 0; i < clientBoidManager->getBoidFlock().size(); i++)
+				{
+					clientBoidManager->getBoidFlock()[i].setBoidID(boidData.ID);
+					clientBoidManager->getBoidFlock()[i].setPosition(sf::Vector2f(boidData.positionX, boidData.positionY));
+					clientBoidManager->getBoidFlock()[i].setBoidVelocity(sf::Vector2f(boidData.velocityX, boidData.velocityY));
+				}
+
+				//// UDP socket:
+				//sf::IpAddress recipient = SERVERIP;
+				//if (clientSocket.send(sendPacket, recipient, port) != sf::Socket::Done)
+				//{
+				//	// error...
+				//	die("sendto failed");
+				//}
+			}
+			break;
+			case ObstacleCount:
+				break;
+			case ObstaclePositionData:
+				break;
+			case Disconnect:
+				break;
+			default:
+				break;
+			}
+			
+			
+		}
+	}
 	////if (packet >> clientData.allBoidManagers.begin()._Ptr->_Myval->getBoidFlock().begin()._Ptr->_Myval.setPosition()
 	////{
 	////	// ok

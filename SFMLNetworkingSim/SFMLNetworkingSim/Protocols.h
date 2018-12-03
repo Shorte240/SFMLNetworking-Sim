@@ -57,12 +57,14 @@ struct NumBoids : BaseMessage
 
 struct BoidData
 {
+	int ID = -1;
 	float positionX;
 	float positionY;
 	float velocityX;
 	float velocityY;
 
-	BoidData(float posX, float posY, float velX, float velY) :
+	BoidData(int id, float posX, float posY, float velX, float velY) :
+		ID(id),
 		positionX(posX),
 		positionY(posY),
 		velocityX(velX),

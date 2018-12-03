@@ -9,6 +9,11 @@ Server::Server(sf::RenderWindow* hwnd, Input* in)
 	// Initialise new boid manager
 	serverBoidManager = new BoidManager(window, input);
 
+	for (int i = 0; i < serverBoidManager->getBoidFlock().size(); i++)
+	{
+		serverBoidManager->getBoidFlock()[i].setBoidID(i);
+	}
+
 	allBoidManagers.push_back(serverBoidManager);
 
 	// Initialise new obstacle manager
@@ -19,6 +24,7 @@ Server::Server(sf::RenderWindow* hwnd, Input* in)
 	udpServerSocketSetup();
 
 	recv = false;
+	tickTimer = 0.0f;
 }
 
 
@@ -31,8 +37,13 @@ Server::~Server()
 
 void Server::update(float dt)
 {
-	//printf("Waiting for a message...\n");
-	talk_to_client_udp(serverSocket);
+	tickTimer += dt;
+	if (tickTimer >= 1.0f / 64.0f)
+	{
+		tickTimer = 0.0f;
+		//printf("Waiting for a message...\n");
+		talk_to_client_udp(serverSocket);
+	}
 
 	// Update obstacle manager
 	for (auto obsManagers : allObstacleManagers)
@@ -195,22 +206,50 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 				conn->ID = connections.size();
 
 				connections.push_back(conn);
-				std::cout << "Client: " << connections.size() << " has connected." << std::endl
+				std::cout << "Client: " << connections.size() << " has connected." << std::endl;
 			}
 			break;
 			case BoidCount:
-				if (!recv)
+				//if (!recv)
 				{
 					int count;
 					receivePacket >> count;
 					for (int i = 0; i < count; i++)
 					{
-						BoidData boidData(0,0,0,0);
+						BoidData boidData(0,0,0,0,0);
+						receivePacket >> boidData.ID;
 						receivePacket >> boidData.positionX;
 						receivePacket >> boidData.positionY;
 						receivePacket >> boidData.velocityX;
 						receivePacket >> boidData.velocityY;
-						serverBoidManager->addBoidToFlock(boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY);
+						if (boidData.ID == -1)
+						{
+							serverBoidManager->addBoidToFlock(boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY);
+						}
+					}
+					sf::Packet sendPacket;
+					NumBoids numBoid(5);
+					numBoid.messageType = Messages::BoidCount;
+
+					sendPacket << numBoid.messageType;
+					sendPacket << numBoid.numberOfBoids;
+
+					for (int i = 0; i < 5; i++)
+					{
+						BoidData boidData(5 + i, serverBoidManager->getBoidFlock()[i].getPosition().x, serverBoidManager->getBoidFlock()[i].getPosition().y, serverBoidManager->getBoidFlock()[i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[i].getBoidVelocity().y);
+						sendPacket << boidData.ID;
+						sendPacket << boidData.positionX;
+						sendPacket << boidData.positionY;
+						sendPacket << boidData.velocityX;
+						sendPacket << boidData.velocityY;
+					}
+
+					// UDP socket:
+					sf::IpAddress recipient = SERVERIP;
+					if (clientSocket.send(sendPacket, recipient, port) != sf::Socket::Done)
+					{
+						// error...
+						die("sendto failed");
 					}
 					recv = true;
 				}

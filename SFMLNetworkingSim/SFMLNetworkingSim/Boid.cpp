@@ -2,6 +2,8 @@
 
 Boid::Boid(sf::Vector2f& pos, sf::Vector2f& vel, sf::Color& col) : CircleShape()
 {
+	ID = -1;
+
 	// Initialise velocity of Boid to 0.0f.
 	velocity.x = vel.x;
 	velocity.y = vel.y;

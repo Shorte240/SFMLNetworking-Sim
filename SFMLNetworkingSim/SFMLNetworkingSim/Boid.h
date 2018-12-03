@@ -15,11 +15,14 @@ public:
 
 	// Get the Boids velocity
 	sf::Vector2f getBoidVelocity() { return velocity; };
+	int getBoidID() { return ID; };
 
 	// Set the Boids velocity
 	void setBoidVelocity(sf::Vector2f vel);
+	void setBoidID(int id) { ID = id; };
 
 protected:
+	int ID;
 	sf::Vector2f velocity;
 };
 
