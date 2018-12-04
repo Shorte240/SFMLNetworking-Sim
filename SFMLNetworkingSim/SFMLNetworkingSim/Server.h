@@ -41,7 +41,6 @@ private:
 	// Background setup
 	sf::RenderWindow* window;
 	Input* input;
-	bool recv;
 	float tickTimer;
 
 	// Server setup
@@ -51,8 +50,5 @@ private:
 	// Entity Setup
 	BoidManager* serverBoidManager;
 	ObstacleManager* serverObstacleManager;
-
-	std::vector<BoidManager*> allBoidManagers;
-	std::vector<ObstacleManager*> allObstacleManagers;
 };
 

@@ -44,9 +44,6 @@ private:
 	BoidManager* clientBoidManager;
 	ObstacleManager* clientObstacleManager;
 
-	std::vector<BoidManager*> allBoidManagers;
-	std::vector<ObstacleManager*> allObstacleManagers;
-
 	// Vars
 	float totalTime;
 	float tickTimer;

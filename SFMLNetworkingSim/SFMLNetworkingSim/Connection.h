@@ -9,12 +9,12 @@
 class Connection
 {
 public:
-	Connection();
+	Connection(sf::RenderWindow* hwnd, Input *input);
 	~Connection();
 
 	// Boids and Obstacles
-	std::vector<BoidManager> connectionBoidManager;
-	std::vector<ObstacleManager> connectionObstacleManager;
+	BoidManager* connectionBoidManager;
+	ObstacleManager* connectionObstacleManager;
 
 	// Server vars
 	int ID;

@@ -13,12 +13,8 @@ Client::Client(sf::RenderWindow* hwnd, Input* in)
 	// Initialise new boid manager
 	clientBoidManager = new BoidManager(window, input);
 
-	allBoidManagers.push_back(clientBoidManager);
-
 	// Initialise new obstacle manager
 	clientObstacleManager = new ObstacleManager(window, input);
-
-	allObstacleManagers.push_back(clientObstacleManager);
 
 	udpClientSocketSetup();
 }
@@ -42,34 +38,19 @@ void Client::update(float dt)
 	}
 
 	// Update obstacle manager
-	for (auto obsManagers : allObstacleManagers)
-	{
-		obsManagers->update(dt);
-	}
+	clientObstacleManager->update(dt);
 
 	// Update boid manager
-	for (auto boidManagers : allBoidManagers)
-	{
-		for (auto obsManagers : allObstacleManagers)
-		{
-			boidManagers->update(dt, obsManagers->getObstacles());
-		}
-	}
+	clientBoidManager->update(dt, clientObstacleManager->getObstacles());
 }
 
 void Client::render(sf::RenderWindow * window)
 {
 	// Draw obstacles in obstacle manager
-	for (auto obsManagers : allObstacleManagers)
-	{
-		obsManagers->render(window);
-	}
+	clientObstacleManager->render(window);
 
 	// Draw boids in boid manager
-	for (auto boidManagers : allBoidManagers)
-	{
-		boidManagers->render(window);
-	}
+	clientBoidManager->render(window);
 }
 
 void Client::tcpClient()

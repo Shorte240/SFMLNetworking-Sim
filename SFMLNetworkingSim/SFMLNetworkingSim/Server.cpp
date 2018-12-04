@@ -9,21 +9,16 @@ Server::Server(sf::RenderWindow* hwnd, Input* in)
 	// Initialise new boid manager
 	serverBoidManager = new BoidManager(window, input);
 
+	// Set server boid ID's to be 0 - 4.
 	for (int i = 0; i < serverBoidManager->getBoidFlock().size(); i++)
 	{
 		serverBoidManager->getBoidFlock()[i].setBoidID(i);
 	}
 
-	allBoidManagers.push_back(serverBoidManager);
-
 	// Initialise new obstacle manager
 	serverObstacleManager = new ObstacleManager(window, input);
 
-	allObstacleManagers.push_back(serverObstacleManager);
-
 	udpServerSocketSetup();
-
-	recv = false;
 	tickTimer = 0.0f;
 }
 
@@ -46,34 +41,19 @@ void Server::update(float dt)
 	}
 
 	// Update obstacle manager
-	for (auto obsManagers : allObstacleManagers)
-	{
-		obsManagers->update(dt);		
-	}
+	serverObstacleManager->update(dt);
 
 	// Update boid manager
-	for (auto boidManagers : allBoidManagers)
-	{
-		for (auto obsManagers : allObstacleManagers)
-		{
-			boidManagers->update(dt, obsManagers->getObstacles());
-		}
-	}
+	serverBoidManager->update(dt, serverObstacleManager->getObstacles());
 }
 
 void Server::render(sf::RenderWindow * window)
 {
 	// Draw obstacles in obstacle manager
-	for (auto obsManagers : allObstacleManagers)
-	{
-		obsManagers->render(window);
-	}
+	serverObstacleManager->render(window);
 
 	// Draw boids in boid manager
-	for (auto boidManagers : allBoidManagers)
-	{
-		boidManagers->render(window);
-	}
+	serverBoidManager->render(window);
 }
 
 void Server::tcpServer()
@@ -196,73 +176,73 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 		{
 			switch (msgType)
 			{
-			case Connect:
-			{
-				Connection * conn = new Connection();
-				conn->connectionAddress = SERVERIP;
-				conn->connectionPort = port;
-				conn->ID = connections.size();
-
-				connections.push_back(conn);
-				std::cout << "Client: " << connections.size() << " has connected." << std::endl;
-			}
-			break;
-			case BoidCount:
-			{
-				int count;
-				receivePacket >> count;
-				for (int i = 0; i < count; i++)
+				case Connect:
 				{
-					BoidData boidData(0, 0, 0, 0, 0);
-					receivePacket >> boidData.ID;
-					receivePacket >> boidData.positionX;
-					receivePacket >> boidData.positionY;
-					receivePacket >> boidData.velocityX;
-					receivePacket >> boidData.velocityY;
-					if (boidData.ID == -1)
+					Connection * conn = new Connection(window, input);
+					conn->connectionAddress = SERVERIP;
+					conn->connectionPort = port;
+					conn->ID = connections.size();
+
+					connections.push_back(conn);
+					std::cout << "Client: " << connections.size() << " has connected." << std::endl;
+				}
+				break;
+				case BoidCount:
+				{
+					int count;
+					receivePacket >> count;
+					for (int i = 0; i < count; i++)
 					{
-						serverBoidManager->addBoidToFlock(boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY);
+						BoidData boidData(0, 0, 0, 0, 0);
+						receivePacket >> boidData.ID;
+						receivePacket >> boidData.positionX;
+						receivePacket >> boidData.positionY;
+						receivePacket >> boidData.velocityX;
+						receivePacket >> boidData.velocityY;
+						if (boidData.ID == -1)
+						{
+							serverBoidManager->addBoidToFlock(boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY);
+						}
+						else if (boidData.ID == serverBoidManager->getBoidFlock()[5 + i].getBoidID())
+						{
+							serverBoidManager->getBoidFlock()[5 + i].setPosition(sf::Vector2f(boidData.positionX, boidData.positionY));
+							serverBoidManager->getBoidFlock()[5 + i].setBoidVelocity(sf::Vector2f(boidData.velocityX, boidData.velocityY));
+						}
 					}
-					else if (boidData.ID == serverBoidManager->getBoidFlock()[5 + i].getBoidID())
+					sf::Packet sendPacket;
+					NumBoids numBoid(5);
+					numBoid.messageType = Messages::BoidCount;
+
+					sendPacket << numBoid.messageType;
+					sendPacket << numBoid.numberOfBoids;
+
+					for (int i = 0; i < 5; i++)
 					{
-						serverBoidManager->getBoidFlock()[5 + i].setPosition(sf::Vector2f(boidData.positionX, boidData.positionY));
-						serverBoidManager->getBoidFlock()[5 + i].setBoidVelocity(sf::Vector2f(boidData.velocityX, boidData.velocityY));
+						BoidData boidData(5 + i, serverBoidManager->getBoidFlock()[5 + i].getPosition().x, serverBoidManager->getBoidFlock()[5 + i].getPosition().y, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().y);
+						sendPacket << boidData.ID;
+						sendPacket << boidData.positionX;
+						sendPacket << boidData.positionY;
+						sendPacket << boidData.velocityX;
+						sendPacket << boidData.velocityY;
+					}
+
+					// UDP socket:
+					sf::IpAddress recipient = SERVERIP;
+					if (clientSocket.send(sendPacket, recipient, port) != sf::Socket::Done)
+					{
+						// error...
+						die("sendto failed");
 					}
 				}
-				sf::Packet sendPacket;
-				NumBoids numBoid(5);
-				numBoid.messageType = Messages::BoidCount;
-
-				sendPacket << numBoid.messageType;
-				sendPacket << numBoid.numberOfBoids;
-
-				for (int i = 0; i < 5; i++)
-				{
-					BoidData boidData(5 + i, serverBoidManager->getBoidFlock()[5 + i].getPosition().x, serverBoidManager->getBoidFlock()[5 + i].getPosition().y, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().y);
-					sendPacket << boidData.ID;
-					sendPacket << boidData.positionX;
-					sendPacket << boidData.positionY;
-					sendPacket << boidData.velocityX;
-					sendPacket << boidData.velocityY;
-				}
-
-				// UDP socket:
-				sf::IpAddress recipient = SERVERIP;
-				if (clientSocket.send(sendPacket, recipient, port) != sf::Socket::Done)
-				{
-					// error...
-					die("sendto failed");
-				}
-			}
-				break;
-			case ObstacleCount:
-				break;
-			case ObstaclePositionData:
-				break;
-			case Disconnect:
-				break;
-			default:
-				break;
+					break;
+				case ObstacleCount:
+					break;
+				case ObstaclePositionData:
+					break;
+				case Disconnect:
+					break;
+				default:
+					break;
 			}
 		}
 	}
