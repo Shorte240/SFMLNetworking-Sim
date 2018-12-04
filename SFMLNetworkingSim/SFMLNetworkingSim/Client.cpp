@@ -35,6 +35,12 @@ void Client::update(float dt)
 	totalTime += dt;
 	tickTimer += dt;
 
+	if (tickTimer >= (1.0f / 64.0f))
+	{
+		tickTimer = 0.0f;
+		talk_to_server_udp(clientSocket);
+	}
+
 	// Update obstacle manager
 	for (auto obsManagers : allObstacleManagers)
 	{
@@ -48,12 +54,6 @@ void Client::update(float dt)
 		{
 			boidManagers->update(dt, obsManagers->getObstacles());
 		}
-	}
-
-	if (tickTimer >= (1.0f / 64.0f))
-	{
-		tickTimer = 0.0f;
-		talk_to_server_udp(clientSocket);
 	}
 }
 
@@ -199,7 +199,7 @@ void Client::talk_to_server_udp(sf::UdpSocket & socket)
 
 	for (int i = 0; i < clientBoidManager->getBoidFlock().size(); i++)
 	{
-		if (clientBoidManager->getBoidFlock()[i].getBoidID() == -1)
+		if (clientBoidManager->getBoidFlock()[i].getBoidID() == -1 && !sentBoids)
 		{
 			BoidData boidData(-1, clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y);
 			sendPacket << boidData.ID;
@@ -218,6 +218,8 @@ void Client::talk_to_server_udp(sf::UdpSocket & socket)
 			sendPacket << boidData.velocityY;
 		}
 	}
+
+	sentBoids = true;
 	
 	// UDP socket:
 	sf::IpAddress recipient = SERVERIP;
@@ -256,14 +258,15 @@ void Client::talk_to_server_udp(sf::UdpSocket & socket)
 			{
 				int count;
 				receivePacket >> count;
-				BoidData boidData(0, 0, 0, 0, 0);
-				receivePacket >> boidData.ID;
-				receivePacket >> boidData.positionX;
-				receivePacket >> boidData.positionY;
-				receivePacket >> boidData.velocityX;
-				receivePacket >> boidData.velocityY;
+				
 				for (int i = 0; i < clientBoidManager->getBoidFlock().size(); i++)
 				{
+					BoidData boidData(0, 0, 0, 0, 0);
+					receivePacket >> boidData.ID;
+					receivePacket >> boidData.positionX;
+					receivePacket >> boidData.positionY;
+					receivePacket >> boidData.velocityX;
+					receivePacket >> boidData.velocityY;
 					clientBoidManager->getBoidFlock()[i].setBoidID(boidData.ID);
 					clientBoidManager->getBoidFlock()[i].setPosition(sf::Vector2f(boidData.positionX, boidData.positionY));
 					clientBoidManager->getBoidFlock()[i].setBoidVelocity(sf::Vector2f(boidData.velocityX, boidData.velocityY));

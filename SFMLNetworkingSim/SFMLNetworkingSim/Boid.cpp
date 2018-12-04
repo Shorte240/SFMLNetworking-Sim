@@ -4,6 +4,10 @@ Boid::Boid(sf::Vector2f& pos, sf::Vector2f& vel, sf::Color& col) : CircleShape()
 {
 	ID = -1;
 
+	// Init tracking position to 0.0f.
+	position.x = pos.x;
+	position.y = pos.y;
+
 	// Initialise velocity of Boid to 0.0f.
 	velocity.x = vel.x;
 	velocity.y = vel.y;
@@ -23,6 +27,7 @@ Boid::~Boid()
 
 void Boid::update(float dt)
 {
+	position = getPosition();
 }
 
 void Boid::setBoidVelocity(sf::Vector2f vel)

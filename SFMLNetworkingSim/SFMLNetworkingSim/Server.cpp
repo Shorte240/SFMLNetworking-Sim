@@ -184,8 +184,6 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 	// Receive data
 	sf::Packet receivePacket;
 
-	std::size_t received;
-
 	// UDP socket:
 	sf::IpAddress sender;
 	unsigned short port;
@@ -236,7 +234,7 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 
 					for (int i = 0; i < 5; i++)
 					{
-						BoidData boidData(5 + i, serverBoidManager->getBoidFlock()[i].getPosition().x, serverBoidManager->getBoidFlock()[i].getPosition().y, serverBoidManager->getBoidFlock()[i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[i].getBoidVelocity().y);
+						BoidData boidData(5 + i, serverBoidManager->getBoidFlock()[5 + i].getPosition().x, serverBoidManager->getBoidFlock()[5 + i].getPosition().y, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().y);
 						sendPacket << boidData.ID;
 						sendPacket << boidData.positionX;
 						sendPacket << boidData.positionY;

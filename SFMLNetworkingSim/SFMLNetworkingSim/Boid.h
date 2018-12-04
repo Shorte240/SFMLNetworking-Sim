@@ -24,5 +24,6 @@ public:
 protected:
 	int ID;
 	sf::Vector2f velocity;
+	sf::Vector2f position;
 };
 

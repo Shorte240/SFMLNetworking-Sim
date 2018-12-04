@@ -51,5 +51,6 @@ private:
 	float totalTime;
 	float tickTimer;
 	int clientID;
+	bool sentBoids = false;
 };
 
