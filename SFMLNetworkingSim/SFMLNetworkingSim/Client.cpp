@@ -267,11 +267,14 @@ void Client::talk_to_server_udp(sf::UdpSocket & socket)
 					receivePacket >> boidData.positionY;
 					receivePacket >> boidData.velocityX;
 					receivePacket >> boidData.velocityY;
-					clientBoidManager->getBoidFlock()[i].setBoidID(boidData.ID);
+					if (!gotID)
+					{
+						clientBoidManager->getBoidFlock()[i].setBoidID(boidData.ID);
+					}
 					clientBoidManager->getBoidFlock()[i].setPosition(sf::Vector2f(boidData.positionX, boidData.positionY));
 					clientBoidManager->getBoidFlock()[i].setBoidVelocity(sf::Vector2f(boidData.velocityX, boidData.velocityY));
 				}
-
+				gotID = true;
 				//// UDP socket:
 				//sf::IpAddress recipient = SERVERIP;
 				//if (clientSocket.send(sendPacket, recipient, port) != sf::Socket::Done)
@@ -294,18 +297,6 @@ void Client::talk_to_server_udp(sf::UdpSocket & socket)
 			
 		}
 	}
-	////if (packet >> clientData.allBoidManagers.begin()._Ptr->_Myval->getBoidFlock().begin()._Ptr->_Myval.setPosition()
-	////{
-	////	// ok
-	////	response_received = true;
-	////	std::cout << "Received " << packet.getDataSize() << " bytes from " << sender << " on port " << prt << std::endl;
-	////	std::cout << "'" << s << "'" << std::endl;
-	////}
-	//else
-	//{
-	//	// die
-	//	std::cout << "packet broke yo" << std::endl;
-	//}
 }
 
 void Client::die(const char * message)

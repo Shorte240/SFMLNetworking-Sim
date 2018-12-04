@@ -208,49 +208,52 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 			}
 			break;
 			case BoidCount:
-				//if (!recv)
+			{
+				int count;
+				receivePacket >> count;
+				for (int i = 0; i < count; i++)
 				{
-					int count;
-					receivePacket >> count;
-					for (int i = 0; i < count; i++)
+					BoidData boidData(0, 0, 0, 0, 0);
+					receivePacket >> boidData.ID;
+					receivePacket >> boidData.positionX;
+					receivePacket >> boidData.positionY;
+					receivePacket >> boidData.velocityX;
+					receivePacket >> boidData.velocityY;
+					if (boidData.ID == -1)
 					{
-						BoidData boidData(0,0,0,0,0);
-						receivePacket >> boidData.ID;
-						receivePacket >> boidData.positionX;
-						receivePacket >> boidData.positionY;
-						receivePacket >> boidData.velocityX;
-						receivePacket >> boidData.velocityY;
-						if (boidData.ID == -1)
-						{
-							serverBoidManager->addBoidToFlock(boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY);
-						}
+						serverBoidManager->addBoidToFlock(boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY);
 					}
-					sf::Packet sendPacket;
-					NumBoids numBoid(5);
-					numBoid.messageType = Messages::BoidCount;
-
-					sendPacket << numBoid.messageType;
-					sendPacket << numBoid.numberOfBoids;
-
-					for (int i = 0; i < 5; i++)
+					else if (boidData.ID == serverBoidManager->getBoidFlock()[5 + i].getBoidID())
 					{
-						BoidData boidData(5 + i, serverBoidManager->getBoidFlock()[5 + i].getPosition().x, serverBoidManager->getBoidFlock()[5 + i].getPosition().y, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().y);
-						sendPacket << boidData.ID;
-						sendPacket << boidData.positionX;
-						sendPacket << boidData.positionY;
-						sendPacket << boidData.velocityX;
-						sendPacket << boidData.velocityY;
+						serverBoidManager->getBoidFlock()[5 + i].setPosition(sf::Vector2f(boidData.positionX, boidData.positionY));
+						serverBoidManager->getBoidFlock()[5 + i].setBoidVelocity(sf::Vector2f(boidData.velocityX, boidData.velocityY));
 					}
-
-					// UDP socket:
-					sf::IpAddress recipient = SERVERIP;
-					if (clientSocket.send(sendPacket, recipient, port) != sf::Socket::Done)
-					{
-						// error...
-						die("sendto failed");
-					}
-					recv = true;
 				}
+				sf::Packet sendPacket;
+				NumBoids numBoid(5);
+				numBoid.messageType = Messages::BoidCount;
+
+				sendPacket << numBoid.messageType;
+				sendPacket << numBoid.numberOfBoids;
+
+				for (int i = 0; i < 5; i++)
+				{
+					BoidData boidData(5 + i, serverBoidManager->getBoidFlock()[5 + i].getPosition().x, serverBoidManager->getBoidFlock()[5 + i].getPosition().y, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().y);
+					sendPacket << boidData.ID;
+					sendPacket << boidData.positionX;
+					sendPacket << boidData.positionY;
+					sendPacket << boidData.velocityX;
+					sendPacket << boidData.velocityY;
+				}
+
+				// UDP socket:
+				sf::IpAddress recipient = SERVERIP;
+				if (clientSocket.send(sendPacket, recipient, port) != sf::Socket::Done)
+				{
+					// error...
+					die("sendto failed");
+				}
+			}
 				break;
 			case ObstacleCount:
 				break;
@@ -266,14 +269,6 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 	else
 	{
 		//printf("Nothing received\n");
-	}
-
-	// UDP socket:
-	sf::IpAddress recipient = SERVERIP;
-	if (clientSocket.send(receivePacket, recipient, port) != sf::Socket::Done)
-	{
-		// error...
-		die("sendto failed");
 	}
 }
 
