@@ -27,7 +27,7 @@ Server::~Server()
 {
 	// We won't actually get here, but if we did then we'd want to clean up...
 	printf("Quitting\n");
-	serverSocket.unbind();
+	boidSocket.unbind();
 }
 
 void Server::update(float dt)
@@ -40,7 +40,8 @@ void Server::update(float dt)
 		tickTimer = 0.0f;
 
 		// Communicate with clients
-		talk_to_client_udp(serverSocket);
+		receiveBoidInfo(boidSocket);
+		receiveObstacleInfo(obstacleSocket);
 	}
 
 	// Update obstacle manager
@@ -113,17 +114,30 @@ void Server::udpServerSocketSetup()
 	printf("Echo UDP SFML Server\n");
 
 	// bind the socket to a port
-	if (serverSocket.bind(SERVERPORT, SERVERIP) != sf::Socket::Done)
+	if (boidSocket.bind(SERVERPORT, SERVERIP) != sf::Socket::Done)
 	{
 		// error...
 		die("bind failed");
 	}
 
 	// Set the server socket to non-blocking
-	serverSocket.setBlocking(false);
+	boidSocket.setBlocking(false);
+
+	// bind the socket to a port
+	if (obstacleSocket.bind(SERVERPORT2, SERVERIP) != sf::Socket::Done)
+	{
+		// error...
+		die("bind failed");
+	}
+
+	// Set the server socket to non-blocking
+	obstacleSocket.setBlocking(false);
 
 	// Print IP and Port the server is bound to
-	printf("Server socket bound to address %s, port %d\n", SERVERIP, SERVERPORT);
+	printf("Boid socket bound to address %s, port %d\n", SERVERIP, SERVERPORT);
+
+	// Print IP and Port the server is bound to
+	printf("Obstacle socket bound to address %s, port %d\n", SERVERIP, SERVERPORT2);
 }
 
 void Server::talk_to_client_tcp(sf::TcpSocket & clientSocket)
@@ -162,7 +176,7 @@ void Server::talk_to_client_tcp(sf::TcpSocket & clientSocket)
 	}
 }
 
-void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
+void Server::receiveBoidInfo(sf::UdpSocket & clientSocket)
 {
 	// Receive data
 	sf::Packet receivePacket;
@@ -271,10 +285,6 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 					}
 				}
 					break;
-				case ObstacleCount:
-					break;
-				case ObstaclePositionData:
-					break;
 				case Disconnect:
 					break;
 				default:
@@ -282,9 +292,53 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 			}
 		}
 	}
-	else
+}
+
+void Server::receiveObstacleInfo(sf::UdpSocket & clientSocket)
+{
+	// Receive data
+	sf::Packet receivePacket;
+
+	// UDP socket:
+	sf::IpAddress sender;
+	unsigned short port;
+
+	if (clientSocket.receive(receivePacket, sender, port) == sf::Socket::Done)
 	{
-		//printf("Nothing received\n");
+		int msgType;
+
+		if (receivePacket >> msgType)
+		{
+			switch (msgType)
+			{
+			case ObstacleCount:
+			{
+				int count;
+				receivePacket >> count;
+				for (int i = 0; i < count; i++)
+				{
+					ObstacleData obsData(0, 0);
+					receivePacket >> obsData.positionX;
+					receivePacket >> obsData.positionY;
+					if (serverObstacleManager->getObstacles().empty())
+					{
+						serverObstacleManager->addObstacle(obsData.positionX + 10, obsData.positionY + 10);
+					}
+					else if (sf::Vector2f(obsData.positionX, obsData.positionY) != sf::Vector2f(serverObstacleManager->getObstacles()[i].getPosition().x, serverObstacleManager->getObstacles()[i].getPosition().y))
+					{
+						serverObstacleManager->addObstacle(obsData.positionX, obsData.positionY);
+					}
+					/*else
+					{
+						serverObstacleManager->getObstacles()[i].setPosition(obsData.positionX, obsData.positionY);
+					}*/
+				}
+			}
+			break;
+			default:
+				break;
+			}
+		}
 	}
 }
 

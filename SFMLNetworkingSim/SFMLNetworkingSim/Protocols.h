@@ -92,7 +92,7 @@ struct NumObstacles : BaseMessage
 	}
 };
 
-struct ObstacleData : BaseMessage
+struct ObstacleData
 {
 	float positionX;
 	float positionY;
@@ -101,7 +101,6 @@ struct ObstacleData : BaseMessage
 		positionX(posX),
 		positionY(posY)
 	{
-		messageType = Messages::ObstaclePositionData;
 	}
 };
 

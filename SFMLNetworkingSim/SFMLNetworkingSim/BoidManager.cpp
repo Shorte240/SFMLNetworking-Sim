@@ -91,7 +91,7 @@ void BoidManager::updateText()
 	boidSeparationText.setFillColor(sf::Color::White);
 	boidSeparationText.setPosition(window->getSize().x - 162, 12);
 
-	// Boid separation value text
+	// Boid count text
 	boidCountText.setFont(font);
 	boidCountText.setCharacterSize(12);
 	boidCountText.setString("Boid Count: " + std::to_string(boidFlock.size()));

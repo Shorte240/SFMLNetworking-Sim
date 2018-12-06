@@ -10,6 +10,7 @@
 
 // The UDP port number for the server
 #define SERVERPORT 4444
+#define SERVERPORT2 4445
 
 // The (fixed) size of message that we send between the two programs
 // --- MAY NOT BE NEEDED --- //
@@ -32,7 +33,8 @@ protected:
 
 	// Communication with client, TCP or UDP
 	void talk_to_client_tcp(sf::TcpSocket& clientSocket);
-	void talk_to_client_udp(sf::UdpSocket& clientSocket);
+	void receiveBoidInfo(sf::UdpSocket& clientSocket);
+	void receiveObstacleInfo(sf::UdpSocket& clientSocket);
 
 	// NEED TO FIND BETTER WAY TO HANDLE ERRORS
 	void die(const char *message);
@@ -45,7 +47,8 @@ private:
 	float tickTimer;
 
 	// Server setup
-	sf::UdpSocket serverSocket;
+	sf::UdpSocket boidSocket;
+	sf::UdpSocket obstacleSocket;
 	std::vector<Connection*> connections;
 
 	// Entity Setup

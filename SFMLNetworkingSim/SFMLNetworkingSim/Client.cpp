@@ -23,7 +23,7 @@ Client::~Client()
 {
 	//// We won't actually get here, but if we did then we'd want to clean up...
 	printf("Quitting\n");
-	clientSocket.unbind();
+	boidSocket.unbind();
 }
 
 void Client::update(float dt)
@@ -35,7 +35,8 @@ void Client::update(float dt)
 	{
 		tickTimer = 0.0f;
 		
-		talk_to_server_udp(clientSocket);
+		receiveBoidInfo(boidSocket);
+		receiveObstacleInfo(obstacleSocket);
 	}
 
 	// Update obstacle manager
@@ -90,16 +91,26 @@ void Client::udpClientSocketSetup()
 	printf("Port number to send to: %d\n\n", SERVERPORT);
 
 	// bind the socket to a port
-	if (clientSocket.bind(sf::Socket::AnyPort, SERVERIP) != sf::Socket::Done)
+	if (boidSocket.bind(sf::Socket::AnyPort, SERVERIP) != sf::Socket::Done)
 	{
 		// error...
 		die("bind failed");
 	}
 
 	// Set the client socket to non-blocking
-	clientSocket.setBlocking(false);
+	boidSocket.setBlocking(false);
 
-	connectToUDPServer(clientSocket);
+	// bind the socket to a port
+	if (obstacleSocket.bind(sf::Socket::AnyPort, SERVERIP) != sf::Socket::Done)
+	{
+		// error...
+		die("bind failed");
+	}
+
+	// Set the client socket to non-blocking
+	obstacleSocket.setBlocking(false);
+
+	connectToUDPServer(boidSocket);
 }
 
 void Client::connectToUDPServer(sf::UdpSocket & socket)
@@ -124,8 +135,6 @@ void Client::connectToUDPServer(sf::UdpSocket & socket)
 		// error...
 		die("sendto failed");
 	}
-
-	
 }
 
 void Client::talk_to_server_tcp(sf::TcpSocket & socket)
@@ -170,7 +179,7 @@ void Client::talk_to_server_tcp(sf::TcpSocket & socket)
 	}
 }
 
-void Client::talk_to_server_udp(sf::UdpSocket & socket)
+void Client::receiveBoidInfo(sf::UdpSocket & socket)
 {
 	sf::Packet sendBoidPacket;
 
@@ -218,28 +227,6 @@ void Client::talk_to_server_udp(sf::UdpSocket & socket)
 	unsigned short port = SERVERPORT;
 
 	if (socket.send(sendBoidPacket, recipient, port) != sf::Socket::Done)
-	{
-		// error...
-		die("sendto failed");
-	}
-
-	sf::Packet sendObstaclePacket;
-
-	NumObstacles numberOfObstacles(clientObstacleManager->getObstacles().size());
-
-	numberOfObstacles.messageType = Messages::ObstacleCount;
-
-	sendBoidPacket << numberOfObstacles.messageType;
-	sendBoidPacket << numberOfObstacles.numberOfObstacles;
-
-	for (int i = 0; i < clientObstacleManager->getObstacles().size(); i++)
-	{
-		ObstacleData obstacleData(clientObstacleManager->getObstacles()[i].getPosition().x, clientObstacleManager->getObstacles()[i].getPosition().y);
-		sendObstaclePacket << obstacleData.positionX;
-		sendObstaclePacket << obstacleData.positionY;
-	}
-
-	if (socket.send(sendObstaclePacket, recipient, port) != sf::Socket::Done)
 	{
 		// error...
 		die("sendto failed");
@@ -319,19 +306,8 @@ void Client::talk_to_server_udp(sf::UdpSocket & socket)
 					}
 				}
 				gotID = true;
-				//// UDP socket:
-				//sf::IpAddress recipient = SERVERIP;
-				//if (clientSocket.send(sendPacket, recipient, port) != sf::Socket::Done)
-				//{
-				//	// error...
-				//	die("sendto failed");
-				//}
 			}
 			break;
-			case ObstacleCount:
-				break;
-			case ObstaclePositionData:
-				break;
 			case Disconnect:
 				break;
 			default:
@@ -339,6 +315,72 @@ void Client::talk_to_server_udp(sf::UdpSocket & socket)
 			}
 			
 			
+		}
+	}
+}
+
+void Client::receiveObstacleInfo(sf::UdpSocket & clientSocket)
+{
+	sf::Packet sendObstaclePacket;
+
+	NumObstacles numberOfObstacles(clientObstacleManager->getObstacles().size());
+
+	numberOfObstacles.messageType = Messages::ObstacleCount;
+
+	sendObstaclePacket << numberOfObstacles.messageType;
+	sendObstaclePacket << numberOfObstacles.numberOfObstacles;
+
+	for (int i = 0; i < clientObstacleManager->getObstacles().size(); i++)
+	{
+		ObstacleData obstacleData(clientObstacleManager->getObstacles()[i].getPosition().x, clientObstacleManager->getObstacles()[i].getPosition().y);
+		sendObstaclePacket << obstacleData.positionX;
+		sendObstaclePacket << obstacleData.positionY;
+	}
+
+	// UDP socket:
+	sf::IpAddress recipient = SERVERIP;
+	unsigned short port = SERVERPORT2;
+
+	if (clientSocket.send(sendObstaclePacket, recipient, port) != sf::Socket::Done)
+	{
+		// error...
+		die("sendto failed");
+	}
+
+	// Receive data
+	sf::Packet receivePacket;
+
+	// UDP socket:
+	sf::IpAddress sender;
+	unsigned short prt;
+
+	if (clientSocket.receive(receivePacket, sender, prt) == sf::Socket::Done)
+	{
+		int msgType;
+
+		if (receivePacket >> msgType)
+		{
+			switch (msgType)
+			{
+			case ObstacleCount:
+			{
+				int count;
+				receivePacket >> count;
+				for (int i = 0; i < count; i++)
+				{
+					ObstacleData obsData(0, 0);
+					receivePacket >> obsData.positionX;
+					receivePacket >> obsData.positionY;
+					if (clientObstacleManager->getObstacles().size() == 0 || sf::Vector2f(obsData.positionX, obsData.positionY) != clientObstacleManager->getObstacles()[i].getPosition())
+					{
+						clientObstacleManager->addObstacle(obsData.positionX, obsData.positionY);
+					}
+				}
+			}
+			break;
+			default:
+				break;
+			}
 		}
 	}
 }

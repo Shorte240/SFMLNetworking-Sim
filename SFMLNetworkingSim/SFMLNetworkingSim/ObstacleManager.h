@@ -15,6 +15,8 @@ public:
 	void update(float dt);
 	void render(sf::RenderWindow* window);
 
+	void addObstacle(float posX, float posY);
+
 	// Get the vector of obstacles
 	std::vector<Obstacle>& getObstacles() { return Obstacles; };
 
@@ -25,6 +27,11 @@ private:
 
 	// Functions
 	void placeObstacle();
+	void updateText();
+
+	// Text & Font
+	sf::Font font;
+	sf::Text obstacleCountText;
 
 	// Entity setup
 	std::vector<Obstacle> Obstacles;
