@@ -1,8 +1,8 @@
 #include "Boid.h"
 
-Boid::Boid(sf::Vector2f& pos, sf::Vector2f& vel, sf::Color& col) : CircleShape()
+Boid::Boid(int id, sf::Vector2f& pos, sf::Vector2f& vel, sf::Color& col) : CircleShape()
 {
-	ID = -1;
+	ID = id;
 
 	// Init tracking position to 0.0f.
 	position.x = pos.x;

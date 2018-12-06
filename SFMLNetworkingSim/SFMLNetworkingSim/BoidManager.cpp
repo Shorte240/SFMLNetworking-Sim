@@ -49,12 +49,12 @@ void BoidManager::render(sf::RenderWindow * window)
 	window->draw(boidSeparationText);
 }
 
-void BoidManager::addBoidToFlock(float posX, float posY, float velX, float velY, int r, int g, int b, int a)
+void BoidManager::addBoidToFlock(int ID, float posX, float posY, float velX, float velY, int r, int g, int b, int a)
 {
 	sf::Vector2f newPos = sf::Vector2f(posX, posY);
 	sf::Vector2f newVel = sf::Vector2f(velX, velY);
 	sf::Color col = sf::Color(r, g, b, a);
-	boidFlock.push_back(Boid(newPos, newVel, col));
+	boidFlock.push_back(Boid(ID, newPos, newVel, col));
 }
 
 // Move all the boids according to the rules.
@@ -112,7 +112,7 @@ void BoidManager::initialisePositions()
 		sf::Vector2f newVel = sf::Vector2f(0.0f, 0.0f);
 
 		// Add a new boid based on the position and colour generated
-		boidFlock.push_back(Boid(newPos, newVel, col));
+		boidFlock.push_back(Boid(-1, newPos, newVel, col));
 	}
 }
 

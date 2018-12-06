@@ -41,6 +41,7 @@ private:
 	// Background setup
 	sf::RenderWindow* window;
 	Input* input;
+	float totalTime;
 	float tickTimer;
 
 	// Server setup

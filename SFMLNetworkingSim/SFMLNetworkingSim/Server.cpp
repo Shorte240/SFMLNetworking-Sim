@@ -13,6 +13,7 @@ Server::Server(sf::RenderWindow* hwnd, Input* in)
 	for (int i = 0; i < serverBoidManager->getBoidFlock().size(); i++)
 	{
 		serverBoidManager->getBoidFlock()[i].setBoidID(i);
+		serverBoidManager->getBoidFlock()[i].setFillColor(sf::Color::White);
 	}
 
 	// Initialise new obstacle manager
@@ -21,7 +22,6 @@ Server::Server(sf::RenderWindow* hwnd, Input* in)
 	udpServerSocketSetup();
 	tickTimer = 0.0f;
 }
-
 
 Server::~Server()
 {
@@ -32,11 +32,14 @@ Server::~Server()
 
 void Server::update(float dt)
 {
+	// Increase tick timer
 	tickTimer += dt;
 	if (tickTimer >= 1.0f / 64.0f)
 	{
+		// Reset tick timer
 		tickTimer = 0.0f;
-		//printf("Waiting for a message...\n");
+
+		// Communicate with clients
 		talk_to_client_udp(serverSocket);
 	}
 
@@ -178,13 +181,33 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 			{
 				case Connect:
 				{
+					// Add new connection
 					Connection * conn = new Connection(window, input);
 					conn->connectionAddress = SERVERIP;
 					conn->connectionPort = port;
 					conn->ID = connections.size();
 
+					// Add connection to vector of connections
 					connections.push_back(conn);
 					std::cout << "Client: " << connections.size() << " has connected." << std::endl;
+
+					// Send ID and time information back to client
+					sf::Packet idPacket;
+					NewConnection connect(totalTime, tickTimer, connections.size());
+					connect.messageType = Messages::Connect;
+
+					idPacket << connect.messageType;
+					idPacket << connect.time;
+					idPacket << connect.totalTime;
+					idPacket << connect.playerID;
+
+					// UDP socket:
+					sf::IpAddress recipient = SERVERIP;
+					if (clientSocket.send(idPacket, recipient, port) != sf::Socket::Done)
+					{
+						// error...
+						die("sendto failed");
+					}
 				}
 				break;
 				case BoidCount:
@@ -205,24 +228,24 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 						receivePacket >> boidData.alphaValue;
 						if (boidData.ID == -1)
 						{
-							serverBoidManager->addBoidToFlock(boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY, boidData.redValue, boidData.greenValue, boidData.blueValue, boidData.alphaValue);
+							serverBoidManager->addBoidToFlock(serverBoidManager->getBoidFlock().size() + i, boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY, boidData.redValue, boidData.greenValue, boidData.blueValue, boidData.alphaValue);
 						}
-						else if (boidData.ID == serverBoidManager->getBoidFlock()[5 + i].getBoidID())
+						else if (boidData.ID == serverBoidManager->getBoidFlock()[i].getBoidID())
 						{
-							serverBoidManager->getBoidFlock()[5 + i].setPosition(sf::Vector2f(boidData.positionX, boidData.positionY));
-							serverBoidManager->getBoidFlock()[5 + i].setBoidVelocity(sf::Vector2f(boidData.velocityX, boidData.velocityY));
+							serverBoidManager->getBoidFlock()[i].setPosition(sf::Vector2f(boidData.positionX, boidData.positionY));
+							serverBoidManager->getBoidFlock()[i].setBoidVelocity(sf::Vector2f(boidData.velocityX, boidData.velocityY));
 						}
 					}
 					sf::Packet sendPacket;
-					NumBoids numBoid(5);
+					NumBoids numBoid(serverBoidManager->getBoidFlock().size());
 					numBoid.messageType = Messages::BoidCount;
 
 					sendPacket << numBoid.messageType;
 					sendPacket << numBoid.numberOfBoids;
 
-					for (int i = 0; i < 5; i++)
+					for (int i = serverBoidManager->getBoidFlock().size() - 1; i > -1; i--)
 					{
-						BoidData boidData(5 + i, serverBoidManager->getBoidFlock()[5 + i].getPosition().x, serverBoidManager->getBoidFlock()[5 + i].getPosition().y, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().y, serverBoidManager->getBoidFlock()[5 + i].getFillColor().r, serverBoidManager->getBoidFlock()[5 + i].getFillColor().g, serverBoidManager->getBoidFlock()[5 + i].getFillColor().b, serverBoidManager->getBoidFlock()[5 + i].getFillColor().a);
+						BoidData boidData(serverBoidManager->getBoidFlock()[i].getBoidID(), serverBoidManager->getBoidFlock()[i].getPosition().x, serverBoidManager->getBoidFlock()[i].getPosition().y, serverBoidManager->getBoidFlock()[i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[i].getBoidVelocity().y, serverBoidManager->getBoidFlock()[i].getFillColor().r, serverBoidManager->getBoidFlock()[i].getFillColor().g, serverBoidManager->getBoidFlock()[i].getFillColor().b, serverBoidManager->getBoidFlock()[i].getFillColor().a);
 						sendPacket << boidData.ID;
 						sendPacket << boidData.positionX;
 						sendPacket << boidData.positionY;
