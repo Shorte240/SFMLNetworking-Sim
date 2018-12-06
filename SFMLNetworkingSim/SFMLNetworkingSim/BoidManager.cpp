@@ -25,7 +25,7 @@ BoidManager::~BoidManager()
 {
 }
 
-void BoidManager::update(float dt, std::list<Obstacle>& obs)
+void BoidManager::update(float dt, std::vector<Obstacle>& obs)
 {
 	moveBoids(dt, obs);
 
@@ -47,6 +47,7 @@ void BoidManager::render(sf::RenderWindow * window)
 
 	// Render the text
 	window->draw(boidSeparationText);
+	window->draw(boidCountText);
 }
 
 void BoidManager::addBoidToFlock(int ID, float posX, float posY, float velX, float velY, int r, int g, int b, int a)
@@ -58,7 +59,7 @@ void BoidManager::addBoidToFlock(int ID, float posX, float posY, float velX, flo
 }
 
 // Move all the boids according to the rules.
-void BoidManager::moveBoids(float dt, std::list<Obstacle>& obs)
+void BoidManager::moveBoids(float dt, std::vector<Obstacle>& obs)
 {
 	sf::Vector2f v1, v2, v3,/*v4, /*v5,*/ v6;
 
@@ -89,6 +90,13 @@ void BoidManager::updateText()
 	boidSeparationText.setString("Separation Value: " + std::to_string(separationValue));
 	boidSeparationText.setFillColor(sf::Color::White);
 	boidSeparationText.setPosition(window->getSize().x - 162, 12);
+
+	// Boid separation value text
+	boidCountText.setFont(font);
+	boidCountText.setCharacterSize(12);
+	boidCountText.setString("Boid Count: " + std::to_string(boidFlock.size()));
+	boidCountText.setFillColor(sf::Color::White);
+	boidCountText.setPosition(window->getSize().x - 162, 24);
 }
 
 // Give initial positions to each boid.
@@ -285,7 +293,7 @@ sf::Vector2f BoidManager::boundPositions(Boid & bj, float dt)
 }
 
 // Rule 7: Tendency away from a particular place.
-sf::Vector2f BoidManager::avoidPlace(Boid & bj, float dt, std::list<Obstacle>& obs)
+sf::Vector2f BoidManager::avoidPlace(Boid & bj, float dt, std::vector<Obstacle>& obs)
 {
 	sf::Vector2f v;
 	float m = 100.0f;

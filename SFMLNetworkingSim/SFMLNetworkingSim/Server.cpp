@@ -226,6 +226,7 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 						receivePacket >> boidData.greenValue;
 						receivePacket >> boidData.blueValue;
 						receivePacket >> boidData.alphaValue;
+
 						if (boidData.ID == -1)
 						{
 							serverBoidManager->addBoidToFlock(serverBoidManager->getBoidFlock().size() + i, boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY, boidData.redValue, boidData.greenValue, boidData.blueValue, boidData.alphaValue);
@@ -235,6 +236,10 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 							serverBoidManager->getBoidFlock()[i].setPosition(sf::Vector2f(boidData.positionX, boidData.positionY));
 							serverBoidManager->getBoidFlock()[i].setBoidVelocity(sf::Vector2f(boidData.velocityX, boidData.velocityY));
 						}
+						/*else if (boidData.ID != serverBoidManager->getBoidFlock()[i].getBoidID())
+						{
+							serverBoidManager->addBoidToFlock(serverBoidManager->getBoidFlock().size() + i, boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY, boidData.redValue, boidData.greenValue, boidData.blueValue, boidData.alphaValue);
+						}*/
 					}
 					sf::Packet sendPacket;
 					NumBoids numBoid(serverBoidManager->getBoidFlock().size());

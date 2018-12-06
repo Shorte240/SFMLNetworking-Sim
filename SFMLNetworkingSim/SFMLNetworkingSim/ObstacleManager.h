@@ -15,8 +15,8 @@ public:
 	void update(float dt);
 	void render(sf::RenderWindow* window);
 
-	// Get the list of obstacles
-	std::list<Obstacle>& getObstacles() { return Obstacles; };
+	// Get the vector of obstacles
+	std::vector<Obstacle>& getObstacles() { return Obstacles; };
 
 private:
 	// Variables
@@ -27,6 +27,6 @@ private:
 	void placeObstacle();
 
 	// Entity setup
-	std::list<Obstacle> Obstacles;
+	std::vector<Obstacle> Obstacles;
 };
 
