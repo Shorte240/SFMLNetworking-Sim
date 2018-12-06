@@ -182,21 +182,29 @@ void Client::talk_to_server_udp(sf::UdpSocket & socket)
 	{
 		if (clientBoidManager->getBoidFlock()[i].getBoidID() == -1 && !sentBoids)
 		{
-			BoidData boidData(-1, clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y);
+			BoidData boidData(-1, clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a);
 			sendPacket << boidData.ID;
 			sendPacket << boidData.positionX;
 			sendPacket << boidData.positionY;
 			sendPacket << boidData.velocityX;
 			sendPacket << boidData.velocityY;
+			sendPacket << boidData.redValue;
+			sendPacket << boidData.greenValue;
+			sendPacket << boidData.blueValue;
+			sendPacket << boidData.alphaValue;
 		}
 		else if (clientBoidManager->getBoidFlock()[i].getBoidID() != -1)
 		{
-			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y);
+			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a);
 			sendPacket << boidData.ID;
 			sendPacket << boidData.positionX;
 			sendPacket << boidData.positionY;
 			sendPacket << boidData.velocityX;
 			sendPacket << boidData.velocityY;
+			sendPacket << boidData.redValue;
+			sendPacket << boidData.greenValue;
+			sendPacket << boidData.blueValue;
+			sendPacket << boidData.alphaValue;
 		}
 	}
 
@@ -242,12 +250,16 @@ void Client::talk_to_server_udp(sf::UdpSocket & socket)
 				
 				for (int i = 0; i < clientBoidManager->getBoidFlock().size(); i++)
 				{
-					BoidData boidData(0, 0, 0, 0, 0);
+					BoidData boidData(0, 0, 0, 0, 0,0,0,0,0);
 					receivePacket >> boidData.ID;
 					receivePacket >> boidData.positionX;
 					receivePacket >> boidData.positionY;
 					receivePacket >> boidData.velocityX;
 					receivePacket >> boidData.velocityY;
+					receivePacket >> boidData.redValue;
+					receivePacket >> boidData.greenValue;
+					receivePacket >> boidData.blueValue;
+					receivePacket >> boidData.alphaValue;
 					if (!gotID)
 					{
 						clientBoidManager->getBoidFlock()[i].setBoidID(boidData.ID);

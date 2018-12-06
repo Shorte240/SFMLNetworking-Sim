@@ -62,13 +62,21 @@ struct BoidData
 	float positionY;
 	float velocityX;
 	float velocityY;
+	int redValue;
+	int greenValue;
+	int blueValue;
+	int alphaValue;
 
-	BoidData(int id, float posX, float posY, float velX, float velY) :
+	BoidData(int id, float posX, float posY, float velX, float velY, int r, int g, int b, int a) :
 		ID(id),
 		positionX(posX),
 		positionY(posY),
 		velocityX(velX),
-		velocityY(velY)
+		velocityY(velY),
+		redValue(r),
+		greenValue(g),
+		blueValue(b),
+		alphaValue(a)
 	{
 	}
 };

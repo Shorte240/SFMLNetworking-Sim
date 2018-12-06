@@ -193,15 +193,19 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 					receivePacket >> count;
 					for (int i = 0; i < count; i++)
 					{
-						BoidData boidData(0, 0, 0, 0, 0);
+						BoidData boidData(0, 0, 0, 0, 0, 0, 0, 0, 0);
 						receivePacket >> boidData.ID;
 						receivePacket >> boidData.positionX;
 						receivePacket >> boidData.positionY;
 						receivePacket >> boidData.velocityX;
 						receivePacket >> boidData.velocityY;
+						receivePacket >> boidData.redValue;
+						receivePacket >> boidData.greenValue;
+						receivePacket >> boidData.blueValue;
+						receivePacket >> boidData.alphaValue;
 						if (boidData.ID == -1)
 						{
-							serverBoidManager->addBoidToFlock(boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY);
+							serverBoidManager->addBoidToFlock(boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY, boidData.redValue, boidData.greenValue, boidData.blueValue, boidData.alphaValue);
 						}
 						else if (boidData.ID == serverBoidManager->getBoidFlock()[5 + i].getBoidID())
 						{
@@ -218,12 +222,16 @@ void Server::talk_to_client_udp(sf::UdpSocket & clientSocket)
 
 					for (int i = 0; i < 5; i++)
 					{
-						BoidData boidData(5 + i, serverBoidManager->getBoidFlock()[5 + i].getPosition().x, serverBoidManager->getBoidFlock()[5 + i].getPosition().y, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().y);
+						BoidData boidData(5 + i, serverBoidManager->getBoidFlock()[5 + i].getPosition().x, serverBoidManager->getBoidFlock()[5 + i].getPosition().y, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[5 + i].getBoidVelocity().y, serverBoidManager->getBoidFlock()[5 + i].getFillColor().r, serverBoidManager->getBoidFlock()[5 + i].getFillColor().g, serverBoidManager->getBoidFlock()[5 + i].getFillColor().b, serverBoidManager->getBoidFlock()[5 + i].getFillColor().a);
 						sendPacket << boidData.ID;
 						sendPacket << boidData.positionX;
 						sendPacket << boidData.positionY;
 						sendPacket << boidData.velocityX;
 						sendPacket << boidData.velocityY;
+						sendPacket << boidData.redValue;
+						sendPacket << boidData.greenValue;
+						sendPacket << boidData.blueValue;
+						sendPacket << boidData.alphaValue;
 					}
 
 					// UDP socket:

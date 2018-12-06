@@ -18,7 +18,7 @@ public:
 	void update(float dt, std::list<Obstacle>& obs);
 	void render(sf::RenderWindow* window);
 
-	void addBoidToFlock(float posX, float posY, float velX, float velY);
+	void addBoidToFlock(float posX, float posY, float velX, float velY, int r, int g, int b, int a);
 	// Get the list of boids
 	std::vector<Boid>& getBoidFlock() { return boidFlock; };
 

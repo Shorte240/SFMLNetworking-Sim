@@ -49,11 +49,11 @@ void BoidManager::render(sf::RenderWindow * window)
 	window->draw(boidSeparationText);
 }
 
-void BoidManager::addBoidToFlock(float posX, float posY, float velX, float velY)
+void BoidManager::addBoidToFlock(float posX, float posY, float velX, float velY, int r, int g, int b, int a)
 {
 	sf::Vector2f newPos = sf::Vector2f(posX, posY);
 	sf::Vector2f newVel = sf::Vector2f(velX, velY);
-	sf::Color col = sf::Color(255, 255, 0, 255);
+	sf::Color col = sf::Color(r, g, b, a);
 	boidFlock.push_back(Boid(newPos, newVel, col));
 }
 
