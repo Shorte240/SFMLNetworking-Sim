@@ -32,8 +32,16 @@ Server::~Server()
 
 void Server::update(float dt)
 {
+	totalTime += dt;
 	// Increase tick timer
 	tickTimer += dt;
+
+	// Update obstacle manager
+	serverObstacleManager->update(dt);
+
+	// Update boid manager
+	serverBoidManager->update(dt, serverObstacleManager->getObstacles());
+
 	if (tickTimer >= 1.0f / 64.0f)
 	{
 		// Reset tick timer
@@ -43,12 +51,6 @@ void Server::update(float dt)
 		receiveBoidInfo(boidSocket);
 		receiveObstacleInfo(obstacleSocket);
 	}
-
-	// Update obstacle manager
-	serverObstacleManager->update(dt);
-
-	// Update boid manager
-	serverBoidManager->update(dt, serverObstacleManager->getObstacles());
 }
 
 void Server::render(sf::RenderWindow * window)
@@ -252,11 +254,22 @@ void Server::receiveBoidInfo(sf::UdpSocket & clientSocket)
 						{
 							serverBoidManager->addBoidToFlock(serverBoidManager->getBoidFlock().size() + i, boidMsgs[i].positionX, boidMsgs[i].positionY, boidMsgs[i].velocityX, boidMsgs[i].velocityY, boidMsgs[i].redValue, boidMsgs[i].greenValue, boidMsgs[i].blueValue, boidMsgs[i].alphaValue);
 						}
-						if (boidMsgs[i].ID == serverBoidManager->getBoidFlock()[i].getBoidID())
+					}
+
+					for (int j = 0; j < serverBoidManager->getBoidFlock().size(); j++)
+					{
+						for (int i = 0; i < boidMsgs.size(); i++)
 						{
-							serverBoidManager->getBoidFlock()[i].setPosition(sf::Vector2f(boidMsgs[i].positionX, boidMsgs[i].positionY));
-							serverBoidManager->getBoidFlock()[i].setBoidVelocity(sf::Vector2f(boidMsgs[i].velocityX, boidMsgs[i].velocityY));
+							if (boidMsgs[i].ID == serverBoidManager->getBoidFlock()[i].getBoidID())
+							{
+								serverBoidManager->getBoidFlock()[j].addMessage(boidMsgs[i]);
+							}
 						}
+					}
+
+					for (int i = 0; i < serverBoidManager->getBoidFlock().size(); i++)
+					{
+						serverBoidManager->getBoidFlock()[i].predictPosition(totalTime);
 					}
 
 					sf::Packet sendPacket;
@@ -268,7 +281,7 @@ void Server::receiveBoidInfo(sf::UdpSocket & clientSocket)
 
 					for (int i = serverBoidManager->getBoidFlock().size() - 1; i > -1; i--)
 					{
-						BoidData boidData(serverBoidManager->getBoidFlock()[i].getBoidID(), serverBoidManager->getBoidFlock()[i].getPosition().x, serverBoidManager->getBoidFlock()[i].getPosition().y, serverBoidManager->getBoidFlock()[i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[i].getBoidVelocity().y, serverBoidManager->getBoidFlock()[i].getFillColor().r, serverBoidManager->getBoidFlock()[i].getFillColor().g, serverBoidManager->getBoidFlock()[i].getFillColor().b, serverBoidManager->getBoidFlock()[i].getFillColor().a, tickTimer);
+						BoidData boidData(serverBoidManager->getBoidFlock()[i].getBoidID(), serverBoidManager->getBoidFlock()[i].getPosition().x, serverBoidManager->getBoidFlock()[i].getPosition().y, serverBoidManager->getBoidFlock()[i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[i].getBoidVelocity().y, serverBoidManager->getBoidFlock()[i].getFillColor().r, serverBoidManager->getBoidFlock()[i].getFillColor().g, serverBoidManager->getBoidFlock()[i].getFillColor().b, serverBoidManager->getBoidFlock()[i].getFillColor().a, totalTime);
 						sendPacket << boidData.ID;
 						sendPacket << boidData.positionX;
 						sendPacket << boidData.positionY;

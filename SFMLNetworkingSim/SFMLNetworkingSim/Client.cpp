@@ -31,6 +31,12 @@ void Client::update(float dt)
 	totalTime += dt;
 	tickTimer += dt;
 
+	// Update obstacle manager
+	clientObstacleManager->update(dt);
+
+	// Update boid manager
+	clientBoidManager->update(dt, clientObstacleManager->getObstacles());
+
 	if (tickTimer >= (1.0f / 64.0f))
 	{
 		tickTimer = 0.0f;
@@ -38,12 +44,6 @@ void Client::update(float dt)
 		receiveBoidInfo(boidSocket);
 		receiveObstacleInfo(obstacleSocket);
 	}
-
-	// Update obstacle manager
-	clientObstacleManager->update(dt);
-
-	// Update boid manager
-	clientBoidManager->update(dt, clientObstacleManager->getObstacles());
 }
 
 void Client::render(sf::RenderWindow * window)
@@ -194,7 +194,7 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 	{
 		if (clientBoidManager->getBoidFlock()[i].getBoidID() == -1 && !sentBoids)
 		{
-			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a, tickTimer);
+			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a, totalTime);
 			sendBoidPacket << boidData.ID;
 			sendBoidPacket << boidData.positionX;
 			sendBoidPacket << boidData.positionY;
@@ -208,7 +208,7 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 		}
 		else if (clientBoidManager->getBoidFlock()[i].getBoidID() != -1)
 		{
-			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a, tickTimer);
+			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a, totalTime);
 			sendBoidPacket << boidData.ID;
 			sendBoidPacket << boidData.positionX;
 			sendBoidPacket << boidData.positionY;
@@ -254,7 +254,7 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 				receivePacket >> connect.time;
 				receivePacket >> connect.totalTime;
 				receivePacket >> connect.playerID;
-				totalTime = connect.totalTime;
+				//totalTime = connect.totalTime;
 				clientID = connect.playerID;
 			}
 				break;
@@ -302,15 +302,24 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 							clientBoidManager->getBoidFlock()[i].setBoidVelocity(sf::Vector2f(boidMsgs[i].velocityX, boidMsgs[i].velocityY));
 							clientBoidManager->getBoidFlock()[i].setFillColor(sf::Color(boidMsgs[i].redValue, boidMsgs[i].greenValue, boidMsgs[i].blueValue, boidMsgs[i].alphaValue));
 						}
-						if (clientBoidManager->getBoidFlock()[i].getBoidID() == boidMsgs[j].ID)
-						{
-							clientBoidManager->getBoidFlock()[i].setBoidID(boidMsgs[j].ID);
-							clientBoidManager->getBoidFlock()[i].setPosition(sf::Vector2f(boidMsgs[j].positionX, boidMsgs[j].positionY));
-							clientBoidManager->getBoidFlock()[i].setBoidVelocity(sf::Vector2f(boidMsgs[j].velocityX, boidMsgs[j].velocityY));
-							clientBoidManager->getBoidFlock()[i].setFillColor(sf::Color(boidMsgs[j].redValue, boidMsgs[j].greenValue, boidMsgs[j].blueValue, boidMsgs[j].alphaValue));
-						}
 					}
 				}
+
+				/*for (int i = 0; i < boidMsgs.size(); i++)
+				{
+					for (int j = 0; j < clientBoidManager->getBoidFlock().size(); j++)
+					{
+						if (boidMsgs[i].ID == clientBoidManager->getBoidFlock()[j].getBoidID())
+						{
+							clientBoidManager->getBoidFlock()[j].addMessage(boidMsgs[i]);
+						}
+					}
+				}*/
+				/*for (int i = 0; i < clientBoidManager->getBoidFlock().size(); i++)
+				{
+					clientBoidManager->getBoidFlock()[i].predictPosition(totalTime);
+				}*/
+
 				gotID = true;
 			}
 			break;
