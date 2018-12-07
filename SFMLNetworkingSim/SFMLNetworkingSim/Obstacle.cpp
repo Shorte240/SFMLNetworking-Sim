@@ -8,9 +8,11 @@ Obstacle::Obstacle(int id, sf::Vector2f pos) : CircleShape()
 	// Set shape of boid
 	setRadius(10.0f);
 
+	setOrigin(sf::Vector2f(getRadius(), getRadius()));
+
 	// Initialise position to 0.0f.
-	position.x = pos.x - getRadius();
-	position.y = pos.y - getRadius();
+	position.x = pos.x;
+	position.y = pos.y;
 
 	setPosition(position);
 	setFillColor(sf::Color::Red);

@@ -315,29 +315,51 @@ void Server::receiveObstacleInfo(sf::UdpSocket & clientSocket)
 			{
 				int count;
 				receivePacket >> count;
+				obsMsgs.clear();
 				for (int i = 0; i < count; i++)
 				{
-					ObstacleData obsData(-1, 0, 0);
+					ObstacleData obsData(0, 0, 0);
 					receivePacket >> obsData.ID;
 					receivePacket >> obsData.positionX;
 					receivePacket >> obsData.positionY;
-					if (serverObstacleManager->getObstacles().size() < count)
+					obsMsgs.push_back(obsData);
+				}
+
+				if (serverObstacleManager->getObstacles().empty())
+				{
+					for (int i = 0; i < obsMsgs.size(); i++)
 					{
-						if (obsData.ID == -1)
-						{
-							serverObstacleManager->addObstacle(i, obsData.positionX + 10, obsData.positionY + 10);
-						}
-						if (obsData.ID == serverObstacleManager->getObstacles()[i].getID())
-						{
-							serverObstacleManager->getObstacles()[i].setID(obsData.ID);
-							serverObstacleManager->getObstacles()[i].setPosition(obsData.positionX, obsData.positionY);
-						}
-						/*else
-						{
-							serverObstacleManager->getObstacles()[i].setPosition(obsData.positionX, obsData.positionY);
-						}*/
+						serverObstacleManager->addObstacle(obsMsgs[i].ID, obsMsgs[i].positionX, obsMsgs[i].positionY);
 					}
 				}
+
+				if (obsMsgs.size() > serverObstacleManager->getObstacles().size())
+				{
+					int o = obsMsgs.size();
+					int p = serverObstacleManager->getObstacles().size();
+					int r = o - p;
+					for (int i = obsMsgs.size() - r; i < obsMsgs.size(); i++)
+					{
+						serverObstacleManager->addObstacle(obsMsgs[i].ID, obsMsgs[i].positionX, obsMsgs[i].positionY);
+					}
+				}
+
+				for (int j = 0; j < serverObstacleManager->getObstacles().size(); j++)
+				{
+					for (int k = 0; k < obsMsgs.size(); k++)
+					{
+						if (serverObstacleManager->getObstacles()[j].getPosition() == sf::Vector2f(obsMsgs[k].positionX, obsMsgs[k].positionY))
+						{
+							serverObstacleManager->getObstacles()[j].setID(obsMsgs[k].ID);
+							serverObstacleManager->getObstacles()[j].setPosition(obsMsgs[k].positionX, obsMsgs[k].positionY);
+						}
+						if (serverObstacleManager->getObstacles()[j].getPosition() != sf::Vector2f(obsMsgs[k].positionX, obsMsgs[k].positionY) && serverObstacleManager->getObstacles()[j].getPosition() != serverObstacleManager->getObstacles()[j].getPosition())
+						{
+							serverObstacleManager->addObstacle(obsMsgs[k].ID, obsMsgs[k].positionX, obsMsgs[k].positionY);
+						}
+					}
+				}
+				
 				sf::Packet sendObsPacket;
 				NumObstacles numberOfObstacles(serverObstacleManager->getObstacles().size());
 

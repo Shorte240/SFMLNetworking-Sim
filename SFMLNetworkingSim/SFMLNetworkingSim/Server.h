@@ -45,6 +45,7 @@ private:
 	Input* input;
 	float totalTime;
 	float tickTimer;
+	std::vector<ObstacleData> obsMsgs;
 
 	// Server setup
 	sf::UdpSocket boidSocket;

@@ -377,20 +377,48 @@ void Client::receiveObstacleInfo(sf::UdpSocket & clientSocket)
 			{
 				int count;
 				receivePacket >> count;
+				obsMsgs.clear();
 				for (int i = 0; i < count; i++)
 				{
 					ObstacleData obsData(0, 0, 0);
 					receivePacket >> obsData.ID;
 					receivePacket >> obsData.positionX;
 					receivePacket >> obsData.positionY;
-					if (clientObstacleManager->getObstacles()[i].getID() == -1)
+					obsMsgs.push_back(obsData);
+				}
+
+				if (clientObstacleManager->getObstacles().empty())
+				{
+					for (int i = 0; i < obsMsgs.size(); i++)
 					{
-						clientObstacleManager->getObstacles()[i].setID(obsData.ID);
-						clientObstacleManager->getObstacles()[i].setPosition(obsData.positionX, obsData.positionY);
+						clientObstacleManager->addObstacle(obsMsgs[i].ID, obsMsgs[i].positionX, obsMsgs[i].positionY);
 					}
-					if (obsData.ID != clientObstacleManager->getObstacles()[i].getID())
+				}
+
+				if (obsMsgs.size() > clientObstacleManager->getObstacles().size())
+				{
+					int o = obsMsgs.size();
+					int p = clientObstacleManager->getObstacles().size();
+					int r = o - p;
+					for (int i = obsMsgs.size() - r; i < obsMsgs.size(); i++)
 					{
-						clientObstacleManager->addObstacle(obsData.ID, obsData.positionX + 10, obsData.positionY + 10);
+						clientObstacleManager->addObstacle(obsMsgs[i].ID, obsMsgs[i].positionX, obsMsgs[i].positionY);
+					}
+				}
+
+				for (int j = 0; j < clientObstacleManager->getObstacles().size(); j++)
+				{
+					for (int k = 0; k < obsMsgs.size(); k++)
+					{
+						if (clientObstacleManager->getObstacles()[j].getPosition() == sf::Vector2f(obsMsgs[k].positionX, obsMsgs[k].positionY))
+						{
+							clientObstacleManager->getObstacles()[j].setID(obsMsgs[k].ID);
+							clientObstacleManager->getObstacles()[j].setPosition(obsMsgs[k].positionX, obsMsgs[k].positionY);
+						}
+						if (clientObstacleManager->getObstacles()[j].getPosition() != sf::Vector2f(obsMsgs[k].positionX, obsMsgs[k].positionY) && clientObstacleManager->getObstacles()[j].getPosition() != clientObstacleManager->getObstacles()[j].getPosition())
+						{
+							clientObstacleManager->addObstacle(obsMsgs[k].ID, obsMsgs[k].positionX, obsMsgs[k].positionY);
+						}
 					}
 				}
 			}
