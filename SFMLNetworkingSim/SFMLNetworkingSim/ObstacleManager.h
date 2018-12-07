@@ -15,10 +15,11 @@ public:
 	void update(float dt);
 	void render(sf::RenderWindow* window);
 
-	void addObstacle(float posX, float posY);
+	void addObstacle(int id, float posX, float posY);
 
 	// Get the vector of obstacles
 	std::vector<Obstacle>& getObstacles() { return Obstacles; };
+	
 
 private:
 	// Variables

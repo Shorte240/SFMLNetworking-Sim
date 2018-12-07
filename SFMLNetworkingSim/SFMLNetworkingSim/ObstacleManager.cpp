@@ -33,9 +33,9 @@ void ObstacleManager::render(sf::RenderWindow * window)
 	window->draw(obstacleCountText);
 }
 
-void ObstacleManager::addObstacle(float posX, float posY)
+void ObstacleManager::addObstacle(int id, float posX, float posY)
 {
-	Obstacles.push_back(Obstacle(sf::Vector2f(posX, posY)));
+	Obstacles.push_back(Obstacle(id, sf::Vector2f(posX, posY)));
 }
 
 // Place an obstacle at the position the left mouse was clicked
@@ -44,7 +44,7 @@ void ObstacleManager::placeObstacle()
 	if (input->isMouseLeftDown())
 	{
 		input->setMouseLeftDown(false);
-		Obstacles.push_back(Obstacle(sf::Vector2f(input->getMouseX(), input->getMouseY())));
+		Obstacles.push_back(Obstacle(-1, sf::Vector2f(input->getMouseX(), input->getMouseY())));
 	}
 }
 

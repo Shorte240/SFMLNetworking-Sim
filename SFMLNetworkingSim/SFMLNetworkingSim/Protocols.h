@@ -94,10 +94,12 @@ struct NumObstacles : BaseMessage
 
 struct ObstacleData
 {
+	int ID;
 	float positionX;
 	float positionY;
 
-	ObstacleData(float posX, float posY) :
+	ObstacleData(int id, float posX, float posY) :
+		ID(id),
 		positionX(posX),
 		positionY(posY)
 	{

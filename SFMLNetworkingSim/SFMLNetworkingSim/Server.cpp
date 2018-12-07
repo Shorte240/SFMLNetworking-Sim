@@ -317,21 +317,49 @@ void Server::receiveObstacleInfo(sf::UdpSocket & clientSocket)
 				receivePacket >> count;
 				for (int i = 0; i < count; i++)
 				{
-					ObstacleData obsData(0, 0);
+					ObstacleData obsData(-1, 0, 0);
+					receivePacket >> obsData.ID;
 					receivePacket >> obsData.positionX;
 					receivePacket >> obsData.positionY;
-					if (serverObstacleManager->getObstacles().empty())
+					if (serverObstacleManager->getObstacles().size() < count)
 					{
-						serverObstacleManager->addObstacle(obsData.positionX + 10, obsData.positionY + 10);
+						if (obsData.ID == -1)
+						{
+							serverObstacleManager->addObstacle(i, obsData.positionX + 10, obsData.positionY + 10);
+						}
+						if (obsData.ID == serverObstacleManager->getObstacles()[i].getID())
+						{
+							serverObstacleManager->getObstacles()[i].setID(obsData.ID);
+							serverObstacleManager->getObstacles()[i].setPosition(obsData.positionX, obsData.positionY);
+						}
+						/*else
+						{
+							serverObstacleManager->getObstacles()[i].setPosition(obsData.positionX, obsData.positionY);
+						}*/
 					}
-					else if (sf::Vector2f(obsData.positionX, obsData.positionY) != sf::Vector2f(serverObstacleManager->getObstacles()[i].getPosition().x, serverObstacleManager->getObstacles()[i].getPosition().y))
-					{
-						serverObstacleManager->addObstacle(obsData.positionX, obsData.positionY);
-					}
-					/*else
-					{
-						serverObstacleManager->getObstacles()[i].setPosition(obsData.positionX, obsData.positionY);
-					}*/
+				}
+				sf::Packet sendObsPacket;
+				NumObstacles numberOfObstacles(serverObstacleManager->getObstacles().size());
+
+				numberOfObstacles.messageType = Messages::ObstacleCount;
+
+				sendObsPacket << numberOfObstacles.messageType;
+				sendObsPacket << numberOfObstacles.numberOfObstacles;
+
+				for (int i = 0; i < serverObstacleManager->getObstacles().size(); i++)
+				{
+					ObstacleData obstacleData(serverObstacleManager->getObstacles()[i].getID(), serverObstacleManager->getObstacles()[i].getPosition().x, serverObstacleManager->getObstacles()[i].getPosition().y);
+					sendObsPacket << obstacleData.ID;
+					sendObsPacket << obstacleData.positionX;
+					sendObsPacket << obstacleData.positionY;
+				}
+
+				// UDP socket:
+				sf::IpAddress recipient = SERVERIP;
+				if (clientSocket.send(sendObsPacket, recipient, port) != sf::Socket::Done)
+				{
+					// error...
+					die("sendto failed");
 				}
 			}
 			break;

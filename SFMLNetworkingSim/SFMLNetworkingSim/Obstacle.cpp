@@ -1,7 +1,10 @@
 #include "Obstacle.h"
 
-Obstacle::Obstacle(sf::Vector2f pos) : CircleShape()
+Obstacle::Obstacle(int id, sf::Vector2f pos) : CircleShape()
 {
+	// Set ID
+	ID = id;
+
 	// Set shape of boid
 	setRadius(10.0f);
 

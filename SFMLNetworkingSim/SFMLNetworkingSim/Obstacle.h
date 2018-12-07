@@ -8,12 +8,19 @@
 class Obstacle : public sf::CircleShape
 {
 public:
-	Obstacle(sf::Vector2f pos);
+	Obstacle(int id, sf::Vector2f pos);
 	~Obstacle();
 
 	void update(float dt);
 
+	// Getters
+	int getID() { return ID; };
+
+	// Setters
+	void setID(int id) { ID = id; };
+
 protected:
 	sf::Vector2f position;
+	int ID;
 };
 

@@ -332,9 +332,20 @@ void Client::receiveObstacleInfo(sf::UdpSocket & clientSocket)
 
 	for (int i = 0; i < clientObstacleManager->getObstacles().size(); i++)
 	{
-		ObstacleData obstacleData(clientObstacleManager->getObstacles()[i].getPosition().x, clientObstacleManager->getObstacles()[i].getPosition().y);
-		sendObstaclePacket << obstacleData.positionX;
-		sendObstaclePacket << obstacleData.positionY;
+		if (clientObstacleManager->getObstacles()[i].getID() == -1)
+		{
+			ObstacleData obstacleData(-1, clientObstacleManager->getObstacles()[i].getPosition().x, clientObstacleManager->getObstacles()[i].getPosition().y);
+			sendObstaclePacket << obstacleData.ID;
+			sendObstaclePacket << obstacleData.positionX;
+			sendObstaclePacket << obstacleData.positionY;
+		}
+		else
+		{
+			ObstacleData obstacleData(clientObstacleManager->getObstacles()[i].getID(), clientObstacleManager->getObstacles()[i].getPosition().x, clientObstacleManager->getObstacles()[i].getPosition().y);
+			sendObstaclePacket << obstacleData.ID;
+			sendObstaclePacket << obstacleData.positionX;
+			sendObstaclePacket << obstacleData.positionY;
+		}
 	}
 
 	// UDP socket:
@@ -368,12 +379,18 @@ void Client::receiveObstacleInfo(sf::UdpSocket & clientSocket)
 				receivePacket >> count;
 				for (int i = 0; i < count; i++)
 				{
-					ObstacleData obsData(0, 0);
+					ObstacleData obsData(0, 0, 0);
+					receivePacket >> obsData.ID;
 					receivePacket >> obsData.positionX;
 					receivePacket >> obsData.positionY;
-					if (clientObstacleManager->getObstacles().size() == 0 || sf::Vector2f(obsData.positionX, obsData.positionY) != clientObstacleManager->getObstacles()[i].getPosition())
+					if (clientObstacleManager->getObstacles()[i].getID() == -1)
 					{
-						clientObstacleManager->addObstacle(obsData.positionX, obsData.positionY);
+						clientObstacleManager->getObstacles()[i].setID(obsData.ID);
+						clientObstacleManager->getObstacles()[i].setPosition(obsData.positionX, obsData.positionY);
+					}
+					if (obsData.ID != clientObstacleManager->getObstacles()[i].getID())
+					{
+						clientObstacleManager->addObstacle(obsData.ID, obsData.positionX + 10, obsData.positionY + 10);
 					}
 				}
 			}
