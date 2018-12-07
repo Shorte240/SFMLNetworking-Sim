@@ -194,7 +194,7 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 	{
 		if (clientBoidManager->getBoidFlock()[i].getBoidID() == -1 && !sentBoids)
 		{
-			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a);
+			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a, tickTimer);
 			sendBoidPacket << boidData.ID;
 			sendBoidPacket << boidData.positionX;
 			sendBoidPacket << boidData.positionY;
@@ -204,10 +204,11 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 			sendBoidPacket << boidData.greenValue;
 			sendBoidPacket << boidData.blueValue;
 			sendBoidPacket << boidData.alphaValue;
+			sendBoidPacket << boidData.time;
 		}
 		else if (clientBoidManager->getBoidFlock()[i].getBoidID() != -1)
 		{
-			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a);
+			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a, tickTimer);
 			sendBoidPacket << boidData.ID;
 			sendBoidPacket << boidData.positionX;
 			sendBoidPacket << boidData.positionY;
@@ -217,6 +218,7 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 			sendBoidPacket << boidData.greenValue;
 			sendBoidPacket << boidData.blueValue;
 			sendBoidPacket << boidData.alphaValue;
+			sendBoidPacket << boidData.time;
 		}
 	}
 
@@ -264,7 +266,7 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 				boidMsgs.clear();
 				for (int i = 0; i < count; i++)
 				{
-					BoidData boidData(0, 0, 0, 0, 0, 0, 0, 0, 0);
+					BoidData boidData(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 					receivePacket >> boidData.ID;
 					receivePacket >> boidData.positionX;
 					receivePacket >> boidData.positionY;
@@ -274,6 +276,7 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 					receivePacket >> boidData.greenValue;
 					receivePacket >> boidData.blueValue;
 					receivePacket >> boidData.alphaValue;
+					receivePacket >> boidData.time;
 					boidMsgs.push_back(boidData);
 				}
 

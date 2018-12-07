@@ -230,7 +230,7 @@ void Server::receiveBoidInfo(sf::UdpSocket & clientSocket)
 					receivePacket >> count;
 					for (int i = 0; i < count; i++)
 					{
-						BoidData boidData(0, 0, 0, 0, 0, 0, 0, 0, 0);
+						BoidData boidData(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 						receivePacket >> boidData.ID;
 						receivePacket >> boidData.positionX;
 						receivePacket >> boidData.positionY;
@@ -240,6 +240,7 @@ void Server::receiveBoidInfo(sf::UdpSocket & clientSocket)
 						receivePacket >> boidData.greenValue;
 						receivePacket >> boidData.blueValue;
 						receivePacket >> boidData.alphaValue;
+						receivePacket >> boidData.time;
 
 						if (boidData.ID == -1)
 						{
@@ -264,7 +265,7 @@ void Server::receiveBoidInfo(sf::UdpSocket & clientSocket)
 
 					for (int i = serverBoidManager->getBoidFlock().size() - 1; i > -1; i--)
 					{
-						BoidData boidData(serverBoidManager->getBoidFlock()[i].getBoidID(), serverBoidManager->getBoidFlock()[i].getPosition().x, serverBoidManager->getBoidFlock()[i].getPosition().y, serverBoidManager->getBoidFlock()[i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[i].getBoidVelocity().y, serverBoidManager->getBoidFlock()[i].getFillColor().r, serverBoidManager->getBoidFlock()[i].getFillColor().g, serverBoidManager->getBoidFlock()[i].getFillColor().b, serverBoidManager->getBoidFlock()[i].getFillColor().a);
+						BoidData boidData(serverBoidManager->getBoidFlock()[i].getBoidID(), serverBoidManager->getBoidFlock()[i].getPosition().x, serverBoidManager->getBoidFlock()[i].getPosition().y, serverBoidManager->getBoidFlock()[i].getBoidVelocity().x, serverBoidManager->getBoidFlock()[i].getBoidVelocity().y, serverBoidManager->getBoidFlock()[i].getFillColor().r, serverBoidManager->getBoidFlock()[i].getFillColor().g, serverBoidManager->getBoidFlock()[i].getFillColor().b, serverBoidManager->getBoidFlock()[i].getFillColor().a, tickTimer);
 						sendPacket << boidData.ID;
 						sendPacket << boidData.positionX;
 						sendPacket << boidData.positionY;
@@ -274,6 +275,7 @@ void Server::receiveBoidInfo(sf::UdpSocket & clientSocket)
 						sendPacket << boidData.greenValue;
 						sendPacket << boidData.blueValue;
 						sendPacket << boidData.alphaValue;
+						sendPacket << boidData.time;
 					}
 
 					// UDP socket:

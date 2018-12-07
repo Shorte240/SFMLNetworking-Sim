@@ -5,6 +5,8 @@
 
 #include "Includes.h"
 #include "Protocols.h"
+#include "BoidManager.h"
+#include "ObstacleManager.h"
 
 class Connection
 {

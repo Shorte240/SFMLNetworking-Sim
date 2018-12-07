@@ -4,6 +4,8 @@
 
 #include "Includes.h"
 #include "Connection.h"
+#include "BoidManager.h"
+#include "ObstacleManager.h"
 
 // The IP address for the server
 #define SERVERIP "127.0.0.1"

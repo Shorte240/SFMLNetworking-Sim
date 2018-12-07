@@ -4,6 +4,8 @@
 #pragma once
 
 #include "Includes.h"
+#include <cassert>
+#include "Protocols.h"
 
 class Boid : public sf::CircleShape
 {
@@ -12,6 +14,10 @@ public:
 	~Boid();
 
 	void update(float dt);
+
+	void predictPosition(float time);
+
+	void addMessage(const BoidData& msg);
 
 	// Get the Boids velocity
 	sf::Vector2f getBoidVelocity() { return velocity; };
@@ -25,5 +31,7 @@ protected:
 	int ID;
 	sf::Vector2f velocity;
 	sf::Vector2f position;
+
+	std::vector<BoidData> messages_;
 };
 

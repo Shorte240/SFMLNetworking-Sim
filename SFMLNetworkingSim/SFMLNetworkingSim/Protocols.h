@@ -3,9 +3,6 @@
 
 #pragma once
 
-#include "BoidManager.h"
-#include "ObstacleManager.h"
-
 enum Messages : int
 {
 	Connect,
@@ -66,8 +63,9 @@ struct BoidData
 	int greenValue;
 	int blueValue;
 	int alphaValue;
+	float time;
 
-	BoidData(int id, float posX, float posY, float velX, float velY, int r, int g, int b, int a) :
+	BoidData(int id, float posX, float posY, float velX, float velY, int r, int g, int b, int a, float t) :
 		ID(id),
 		positionX(posX),
 		positionY(posY),
@@ -76,7 +74,8 @@ struct BoidData
 		redValue(r),
 		greenValue(g),
 		blueValue(b),
-		alphaValue(a)
+		alphaValue(a),
+		time(t)
 	{
 	}
 };
