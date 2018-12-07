@@ -106,7 +106,27 @@ void Sim::updateText()
 
 void Sim::beginDraw()
 {
-	window->clear(sf::Color::Black);
+	if (isServer)
+	{
+		window->clear(sf::Color::Black);
+	}
+	if (isClient)
+	{
+		// Initialise random number generator
+		//srand(time(NULL));
+
+		//// Calculate random float from 0 - 255 for colour values of boids
+		//float r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
+		//float g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
+		//float b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
+		//sf::Color col(r, g, b, 255.0f);
+		//window->clear(col);
+		window->clear(sf::Color(0, 0, 125, 255));
+	}
+	else
+	{
+		window->clear(sf::Color::Black);
+	}
 }
 
 void Sim::endDraw()

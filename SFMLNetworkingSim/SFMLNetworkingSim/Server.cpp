@@ -335,10 +335,10 @@ void Server::receiveObstacleInfo(sf::UdpSocket & clientSocket)
 
 				if (obsMsgs.size() > serverObstacleManager->getObstacles().size())
 				{
-					int o = obsMsgs.size();
-					int p = serverObstacleManager->getObstacles().size();
-					int r = o - p;
-					for (int i = obsMsgs.size() - r; i < obsMsgs.size(); i++)
+					int messagesSize = obsMsgs.size();
+					int vectorSize = serverObstacleManager->getObstacles().size();
+					int diff = messagesSize - vectorSize;
+					for (int i = obsMsgs.size() - diff; i < obsMsgs.size(); i++)
 					{
 						serverObstacleManager->addObstacle(obsMsgs[i].ID, obsMsgs[i].positionX, obsMsgs[i].positionY);
 					}

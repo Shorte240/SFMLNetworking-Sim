@@ -53,6 +53,7 @@ private:
 	int clientID;
 	bool sentBoids = false;
 	bool gotID = false;
+	std::vector<BoidData> boidMsgs;
 	std::vector<ObstacleData> obsMsgs;
 };
 
