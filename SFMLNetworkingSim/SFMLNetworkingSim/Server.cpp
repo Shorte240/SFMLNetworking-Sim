@@ -228,6 +228,8 @@ void Server::receiveBoidInfo(sf::UdpSocket & clientSocket)
 				{
 					int count;
 					receivePacket >> count;
+
+					boidMsgs.clear();
 					for (int i = 0; i < count; i++)
 					{
 						BoidData boidData(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -241,21 +243,22 @@ void Server::receiveBoidInfo(sf::UdpSocket & clientSocket)
 						receivePacket >> boidData.blueValue;
 						receivePacket >> boidData.alphaValue;
 						receivePacket >> boidData.time;
-
-						if (boidData.ID == -1)
-						{
-							serverBoidManager->addBoidToFlock(serverBoidManager->getBoidFlock().size() + i, boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY, boidData.redValue, boidData.greenValue, boidData.blueValue, boidData.alphaValue);
-						}
-						else if (boidData.ID == serverBoidManager->getBoidFlock()[i].getBoidID())
-						{
-							serverBoidManager->getBoidFlock()[i].setPosition(sf::Vector2f(boidData.positionX, boidData.positionY));
-							serverBoidManager->getBoidFlock()[i].setBoidVelocity(sf::Vector2f(boidData.velocityX, boidData.velocityY));
-						}
-						/*else if (boidData.ID != serverBoidManager->getBoidFlock()[i].getBoidID())
-						{
-							serverBoidManager->addBoidToFlock(serverBoidManager->getBoidFlock().size() + i, boidData.positionX, boidData.positionY, boidData.velocityX, boidData.velocityY, boidData.redValue, boidData.greenValue, boidData.blueValue, boidData.alphaValue);
-						}*/
+						boidMsgs.push_back(boidData);
 					}
+
+					for (int i = 0; i < boidMsgs.size(); i++)
+					{
+						if (boidMsgs[i].ID == -1)
+						{
+							serverBoidManager->addBoidToFlock(serverBoidManager->getBoidFlock().size() + i, boidMsgs[i].positionX, boidMsgs[i].positionY, boidMsgs[i].velocityX, boidMsgs[i].velocityY, boidMsgs[i].redValue, boidMsgs[i].greenValue, boidMsgs[i].blueValue, boidMsgs[i].alphaValue);
+						}
+						if (boidMsgs[i].ID == serverBoidManager->getBoidFlock()[i].getBoidID())
+						{
+							serverBoidManager->getBoidFlock()[i].setPosition(sf::Vector2f(boidMsgs[i].positionX, boidMsgs[i].positionY));
+							serverBoidManager->getBoidFlock()[i].setBoidVelocity(sf::Vector2f(boidMsgs[i].velocityX, boidMsgs[i].velocityY));
+						}
+					}
+
 					sf::Packet sendPacket;
 					NumBoids numBoid(serverBoidManager->getBoidFlock().size());
 					numBoid.messageType = Messages::BoidCount;

@@ -47,6 +47,7 @@ private:
 	Input* input;
 	float totalTime;
 	float tickTimer;
+	std::vector<BoidData> boidMsgs;
 	std::vector<ObstacleData> obsMsgs;
 
 	// Server setup
