@@ -12,9 +12,11 @@ public:
 	ObstacleManager(sf::RenderWindow* hwnd, Input* in);
 	~ObstacleManager();
 
+	// Update the obstacle manager
 	void update(float dt);
+	// Render all obstacles this manager has
 	void render(sf::RenderWindow* window);
-
+	// Add an obstacle
 	void addObstacle(int id, float posX, float posY);
 
 	// Get the vector of obstacles
@@ -22,12 +24,13 @@ public:
 	
 
 private:
-	// Variables
+	// SFML Variables
 	sf::RenderWindow* window;
 	Input* input;
 
-	// Functions
+	// Place an obstacle where left mouse was clicked
 	void placeObstacle();
+	// Update the obstacle count text
 	void updateText();
 
 	// Text & Font

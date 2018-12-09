@@ -1,3 +1,6 @@
+// Input.h
+// Manages all input for the simulation
+
 #pragma once
 #include <SFML/Graphics.hpp>
 
@@ -20,8 +23,6 @@ public:
 	bool isMouseRightDown();
 	int getMouseX();
 	int getMouseY();
-	void setMouseWorld(sf::Vector2f* v);
-	sf::Vector2f getMouseWorld();
 
 private:
 	struct Mouse
@@ -34,6 +35,5 @@ private:
 
 	bool keys[256]{ false };
 	Mouse mouse;
-	sf::Vector2f* mouseWorldPos;
 };
 

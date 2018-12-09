@@ -1,14 +1,14 @@
+// Input.cpp
+// Sets bools depending on what keys/buttons are pressed/released
+
 #include "Input.h"
 
 Input::Input()
 {
 }
 
-
 Input::~Input()
 {
-	delete mouseWorldPos;
-	mouseWorldPos = NULL;
 }
 
 void Input::setKeyDown(int key)
@@ -76,16 +76,4 @@ bool Input::isMouseMiddleDown()
 bool Input::isMouseRightDown()
 {
 	return mouse.right;
-}
-
-void Input::setMouseWorld(sf::Vector2f* v)
-{
-	mouseWorldPos = v;
-}
-
-// Get the location of the mouse based on sf::Mouse
-// Using this to help correct view bugs with mouse movement.
-sf::Vector2f Input::getMouseWorld()
-{
-	return *mouseWorldPos;
 }

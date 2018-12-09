@@ -1,5 +1,6 @@
 // Protocols
 // All info types the server/client need
+// Application layer types
 
 #pragma once
 

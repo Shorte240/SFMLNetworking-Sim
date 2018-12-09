@@ -2,6 +2,7 @@
 
 Sim::Sim(sf::RenderWindow* hwnd, Input* in)
 {
+	// Set window and input for the simulation
 	window = hwnd;
 	input = in;
 
@@ -108,19 +109,12 @@ void Sim::beginDraw()
 {
 	if (isServer)
 	{
+		// Set window colour to black for server
 		window->clear(sf::Color::Black);
 	}
 	if (isClient)
 	{
-		// Initialise random number generator
-		//srand(time(NULL));
-
-		//// Calculate random float from 0 - 255 for colour values of boids
-		//float r = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
-		//float g = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
-		//float b = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / 255.0f));
-		//sf::Color col(r, g, b, 255.0f);
-		//window->clear(col);
+		// Set window colour to dark blue for client
 		window->clear(sf::Color(0, 0, 125, 255));
 	}
 	else

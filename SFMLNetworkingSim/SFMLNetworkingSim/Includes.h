@@ -1,3 +1,5 @@
+// Basic include header to hold shared includes
+
 #pragma once
 
 #include <SFML/Network.hpp>

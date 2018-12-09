@@ -10,7 +10,7 @@
 // The IP address of the server to connect to
 #define SERVERIP "127.0.0.1"
 
-// The TCP port number on the server to connect to
+// The port number on the server to connect to
 #define SERVERPORT 4444
 #define SERVERPORT2 4445
 
@@ -23,25 +23,29 @@ public:
 	Client(sf::RenderWindow* hwnd, Input *input);
 	~Client();
 
-	// Functions
+	// Update the client
 	void update(float dt);
+	// Render the clients simulation
 	void render(sf::RenderWindow* window);
 
 protected:
-	void tcpClient();
+	// Bind the port and set the socket to non blocking
 	void udpClientSocketSetup();
+	// Attempt a connection with UDP to the server
 	void connectToUDPServer(sf::UdpSocket& socket);
-	void talk_to_server_tcp(sf::TcpSocket& socket);
+	// Send/Receive information about boids
 	void receiveBoidInfo(sf::UdpSocket& socket);
+	// Send/Receive information about obstacles
 	void receiveObstacleInfo(sf::UdpSocket& clientSocket);
+	// Error to give if there was a problem with send/receive
 	void die(const char *message);
 
 private:
-	// Background setup
+	// SFML setup
 	sf::RenderWindow* window;
 	Input* input;
 
-	// Client setup
+	// Sockets
 	sf::UdpSocket boidSocket;
 	sf::UdpSocket obstacleSocket;
 
@@ -49,13 +53,16 @@ private:
 	BoidManager* clientBoidManager;
 	ObstacleManager* clientObstacleManager;
 
-	// Vars
+	// Variables
+	// Total time the client has been running
 	float totalTime;
+	// Tick count as to when messages should be sent/received
 	float tickTimer;
+	// Clients ID
 	int clientID;
-	bool sentBoids = false;
-	bool gotID = false;
+	// A message history about boids
 	std::vector<BoidData> boidMsgs;
+	// A message history about obstacles
 	std::vector<ObstacleData> obsMsgs;
 };
 

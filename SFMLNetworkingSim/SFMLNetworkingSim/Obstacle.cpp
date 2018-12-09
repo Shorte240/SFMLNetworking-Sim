@@ -1,3 +1,7 @@
+// Obstacle.cpp
+// Sets the ID, radius, origin, position and fill colour
+// Of the obstacle
+
 #include "Obstacle.h"
 
 Obstacle::Obstacle(int id, sf::Vector2f pos) : CircleShape()

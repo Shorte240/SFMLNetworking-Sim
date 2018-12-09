@@ -1,11 +1,16 @@
-#include "Client.h"
+// Client.cpp
+// Has its own boid flock
+// Communicates with the server
 
+#include "Client.h"
 
 Client::Client(sf::RenderWindow* hwnd, Input* in)
 {
+	// Set the window and input of the client
 	window = hwnd;
 	input = in;
 
+	// Initialise total time, ID and tick timer to 0
 	totalTime = 0.0f;
 	clientID = 0;
 	tickTimer = 0.0f;
@@ -16,18 +21,20 @@ Client::Client(sf::RenderWindow* hwnd, Input* in)
 	// Initialise new obstacle manager
 	clientObstacleManager = new ObstacleManager(window, input);
 
+	// Set up the UDP sockets the client will use
 	udpClientSocketSetup();
 }
 
 Client::~Client()
 {
-	//// We won't actually get here, but if we did then we'd want to clean up...
-	printf("Quitting\n");
+	// Unbind the clients sockets
 	boidSocket.unbind();
+	obstacleSocket.unbind();
 }
 
 void Client::update(float dt)
 {
+	// Increase the total time and tick timer by delta time
 	totalTime += dt;
 	tickTimer += dt;
 
@@ -37,11 +44,14 @@ void Client::update(float dt)
 	// Update boid manager
 	clientBoidManager->update(dt, clientObstacleManager->getObstacles());
 
+	// Send/Receive infor every 64 ticks
 	if (tickTimer >= (1.0f / 64.0f))
 	{
 		tickTimer = 0.0f;
 		
+		// Send/Receive boid information
 		receiveBoidInfo(boidSocket);
+		// Send/Receive obstacle information
 		receiveObstacleInfo(obstacleSocket);
 	}
 }
@@ -53,33 +63,6 @@ void Client::render(sf::RenderWindow * window)
 
 	// Draw boids in boid manager
 	clientBoidManager->render(window);
-}
-
-void Client::tcpClient()
-{
-	printf("Client TCP Program\n");
-
-	// Initialise SFML TCP socket
-	sf::TcpSocket socket;
-	sf::Socket::Status status = socket.connect(SERVERIP, SERVERPORT);
-	if (status != sf::Socket::Done)
-	{
-		// error...
-		die("connect failed");
-	}
-
-	// Print the IP and Port we're connecting to.
-	printf("IP address to connect to: %s\n", SERVERIP);
-	printf("Port number to connect to: %d\n\n", SERVERPORT);
-
-	printf("Connected to server\n");
-
-	talk_to_server_tcp(socket);
-
-	printf("Quitting\n");
-
-	// Close the socket and clean up the sockets library.
-	socket.disconnect();
 }
 
 void Client::udpClientSocketSetup()
@@ -110,26 +93,32 @@ void Client::udpClientSocketSetup()
 	// Set the client socket to non-blocking
 	obstacleSocket.setBlocking(false);
 
+	// Attempt a connection with UDP sockets to the server
 	connectToUDPServer(boidSocket);
 }
 
 void Client::connectToUDPServer(sf::UdpSocket & socket)
 {
+	// Packet to contain all client info for the server
 	sf::Packet connectPacket;
 
+	// Message type the packet will contain
 	NewConnection connectMsg;
 
+	// Fill out the message for the packet
 	connectMsg.messageType = Messages::Connect;
 	connectMsg.time = totalTime;
 	connectMsg.totalTime = totalTime;
 	connectMsg.playerID = clientID;
 
+	// Fill the packet with the message data
 	connectPacket
 		<< connectMsg.messageType
 		<< connectMsg.time
 		<< connectMsg.totalTime
 		<< connectMsg.playerID;
 
+	// Send and attempt to connect to the server
 	if (socket.send(connectPacket, SERVERIP, SERVERPORT) != sf::Socket::Done)
 	{
 		// error...
@@ -137,63 +126,26 @@ void Client::connectToUDPServer(sf::UdpSocket & socket)
 	}
 }
 
-void Client::talk_to_server_tcp(sf::TcpSocket & socket)
-{
-	// We'll use this buffer to hold what we receive from the server.
-	char buffer[MESSAGESIZE];
-
-	while (memcmp(buffer, "quit", 4) != 0)
-	{
-		printf("Type some text (\"quit\" to exit): ");
-		fflush(stdout);
-
-		// Read a line of text from the user.
-		std::string line;
-		std::getline(std::cin, line);
-		int lineSize = line.size();
-		// Now "line" contains what the user typed (without the trailing \n).
-
-		// Copy the line into the buffer, filling the rest with dashes.
-		// (We must be careful not to write past the end of the array.)
-		memset(buffer, '-', MESSAGESIZE);
-		memcpy(buffer, line.c_str(), std::min(lineSize, MESSAGESIZE));
-
-		if (socket.send(buffer, MESSAGESIZE) != sf::Socket::Done)
-		{
-			// error...
-			printf("send failed\n");
-		}
-
-		// Receive data
-		std::size_t received;
-
-		// TCP socket: (blocking)
-		if (socket.receive(buffer, MESSAGESIZE, received) != sf::Socket::Done)
-		{
-			// error...
-			die("receive failed");
-		}
-		std::cout << "Received " << received << " bytes: '";
-		fwrite(buffer, 1, MESSAGESIZE, stdout);
-		printf("'\n");
-	}
-}
-
 void Client::receiveBoidInfo(sf::UdpSocket & socket)
 {
+	// Packet to contain all the boid info for the server
 	sf::Packet sendBoidPacket;
 
+	// Message type the packet will contain
 	NumBoids numberOfBoids(clientBoidManager->getBoidFlock().size());
 
+	// Number of boid information the packet will contain
 	numberOfBoids.messageType = Messages::BoidCount;
 
+	// Fill the packet with the message type and number of boids
 	sendBoidPacket << numberOfBoids.messageType;
 	sendBoidPacket << numberOfBoids.numberOfBoids;
 
 	for (int i = 0; i < clientBoidManager->getBoidFlock().size(); i++)
 	{
-		if (clientBoidManager->getBoidFlock()[i].getBoidID() == -1 && !sentBoids)
+		if (clientBoidManager->getBoidFlock()[i].getBoidID() == -1)
 		{
+			// Fill out new message type containing the boids ID, position, velocity, colour and time the message was sent
 			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a, totalTime);
 			sendBoidPacket << boidData.ID;
 			sendBoidPacket << boidData.positionX;
@@ -208,6 +160,7 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 		}
 		else if (clientBoidManager->getBoidFlock()[i].getBoidID() != -1)
 		{
+			// Fill out new message type containing the boids ID, position, velocity, colour and time the message was sent
 			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a, totalTime);
 			sendBoidPacket << boidData.ID;
 			sendBoidPacket << boidData.positionX;
@@ -222,50 +175,59 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 		}
 	}
 
-	sentBoids = true;
-	
-	// UDP socket:
+	// Address and port of the server to send the information to
 	sf::IpAddress recipient = SERVERIP;
 	unsigned short port = SERVERPORT;
 
+	// Send the boid packet to the server
 	if (socket.send(sendBoidPacket, recipient, port) != sf::Socket::Done)
 	{
 		// error...
 		die("sendto failed");
 	}
 
+	// Packet to contain all the boid info from the server
 	sf::Packet receivePacket;
+	// Message type that will be filled by the server
 	int msgType;
 
-	// UDP socket:
+	// Address and port the server will send from
 	sf::IpAddress sender;
 	unsigned short prt;
 
+	// Check for messages from the server
 	if (socket.receive(receivePacket, sender, prt) == sf::Socket::Done)
 	{
-		std::cout << "GOT INFO." << std::endl;
+		// Check that the message type is valid
 		if (receivePacket >> msgType)
 		{
+			// Switch statement based on the messages type
 			switch (msgType)
 			{
 			case Connect:
 			{
+				// Fill out a new connect message
+				// Set this clients time and ID
 				NewConnection connect(0, 0, 0);
 				receivePacket >> connect.time;
 				receivePacket >> connect.totalTime;
 				receivePacket >> connect.playerID;
-				//totalTime = connect.totalTime;
+				totalTime = connect.totalTime;
 				clientID = connect.playerID;
 			}
 				break;
 			case BoidCount:
 			{
+				// The number of boids information that the packet will contain
 				int count;
+				// Fill count with the packet data
 				receivePacket >> count;
 
+				// Clear the message history
 				boidMsgs.clear();
 				for (int i = 0; i < count; i++)
 				{
+					// Fill out a boid data message with information from the packet
 					BoidData boidData(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 					receivePacket >> boidData.ID;
 					receivePacket >> boidData.positionX;
@@ -280,6 +242,7 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 					boidMsgs.push_back(boidData);
 				}
 
+				// Check if there are more messages than boids in the clients flock
 				if (boidMsgs.size() > clientBoidManager->getBoidFlock().size())
 				{
 					int messagesSize = boidMsgs.size();
@@ -287,10 +250,12 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 					int diff = messagesSize - vectorSize;
 					for (int i = boidMsgs.size() - diff; i < boidMsgs.size(); i++)
 					{
+						// Add a new boid to the clients flock
 						clientBoidManager->addBoidToFlock(boidMsgs[i].ID, boidMsgs[i].positionX, boidMsgs[i].positionY, boidMsgs[i].velocityX, boidMsgs[i].velocityY, boidMsgs[i].redValue, boidMsgs[i].greenValue, boidMsgs[i].blueValue, boidMsgs[i].alphaValue);
 					}
 				}
 				
+				// Update the client boids ID, position, velocity and colour once verified by the server
 				for (int i = 0; i < clientBoidManager->getBoidFlock().size(); i++)
 				{
 					for (int j = 0; j < boidMsgs.size(); j++)
@@ -319,8 +284,6 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 				{
 					clientBoidManager->getBoidFlock()[i].predictPosition(totalTime);
 				}*/
-
-				gotID = true;
 			}
 			break;
 			case Disconnect:
@@ -336,17 +299,23 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 
 void Client::receiveObstacleInfo(sf::UdpSocket & clientSocket)
 {
+	// Packet to contain all the obstacle info for the server
 	sf::Packet sendObstaclePacket;
 
+	// Fill out a new message with how many obstacles this client has
 	NumObstacles numberOfObstacles(clientObstacleManager->getObstacles().size());
 
+	// Set the message type
 	numberOfObstacles.messageType = Messages::ObstacleCount;
 
+	// Fill the packet with the type and number of obstacles this client has
 	sendObstaclePacket << numberOfObstacles.messageType;
 	sendObstaclePacket << numberOfObstacles.numberOfObstacles;
 
+	// Loop through all the obstacles this client has
 	for (int i = 0; i < clientObstacleManager->getObstacles().size(); i++)
 	{
+		// If its ID is -1, usually a fresh obstacle
 		if (clientObstacleManager->getObstacles()[i].getID() == -1)
 		{
 			ObstacleData obstacleData(-1, clientObstacleManager->getObstacles()[i].getPosition().x, clientObstacleManager->getObstacles()[i].getPosition().y);
@@ -354,6 +323,7 @@ void Client::receiveObstacleInfo(sf::UdpSocket & clientSocket)
 			sendObstaclePacket << obstacleData.positionX;
 			sendObstaclePacket << obstacleData.positionY;
 		}
+		// Otherwise it has been verified by the server
 		else
 		{
 			ObstacleData obstacleData(clientObstacleManager->getObstacles()[i].getID(), clientObstacleManager->getObstacles()[i].getPosition().x, clientObstacleManager->getObstacles()[i].getPosition().y);
@@ -363,38 +333,47 @@ void Client::receiveObstacleInfo(sf::UdpSocket & clientSocket)
 		}
 	}
 
-	// UDP socket:
+	// Address and port of the server to send that packet to
 	sf::IpAddress recipient = SERVERIP;
 	unsigned short port = SERVERPORT2;
 
+	// Send the packet to the server
 	if (clientSocket.send(sendObstaclePacket, recipient, port) != sf::Socket::Done)
 	{
 		// error...
 		die("sendto failed");
 	}
 
-	// Receive data
+	// Packet to receive all obstacle data from the server
 	sf::Packet receivePacket;
 
-	// UDP socket:
+	// Address and port of the server to receive the packet from
 	sf::IpAddress sender;
 	unsigned short prt;
 
+	// Receive a packet
 	if (clientSocket.receive(receivePacket, sender, prt) == sf::Socket::Done)
 	{
+		// Type to check what the message type is
 		int msgType;
 
+		// Check the type is valid
 		if (receivePacket >> msgType)
 		{
+			// Switch based on the type
 			switch (msgType)
 			{
 			case ObstacleCount:
 			{
+				// How many obstacle's data has been received
 				int count;
+				// Fill count out from the packet
 				receivePacket >> count;
+				// Clear the message history
 				obsMsgs.clear();
 				for (int i = 0; i < count; i++)
 				{
+					// Fill out obstacle data from the packet
 					ObstacleData obsData(0, 0, 0);
 					receivePacket >> obsData.ID;
 					receivePacket >> obsData.positionX;
@@ -402,6 +381,7 @@ void Client::receiveObstacleInfo(sf::UdpSocket & clientSocket)
 					obsMsgs.push_back(obsData);
 				}
 
+				// If there are no obstacles in the client simulation, add ones received from the server
 				if (clientObstacleManager->getObstacles().empty())
 				{
 					for (int i = 0; i < obsMsgs.size(); i++)
@@ -410,6 +390,8 @@ void Client::receiveObstacleInfo(sf::UdpSocket & clientSocket)
 					}
 				}
 
+				// If the information received has more obstacles than the client does,
+				// Add the obstacle to the client simulation
 				if (obsMsgs.size() > clientObstacleManager->getObstacles().size())
 				{
 					int messagesSize = obsMsgs.size();
@@ -421,6 +403,7 @@ void Client::receiveObstacleInfo(sf::UdpSocket & clientSocket)
 					}
 				}
 
+				// Update position and ID of all obstacles verified by the server
 				for (int j = 0; j < clientObstacleManager->getObstacles().size(); j++)
 				{
 					for (int k = 0; k < obsMsgs.size(); k++)

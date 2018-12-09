@@ -13,14 +13,17 @@ public:
 
 	void update(float dt);
 
-	// Getters
+	// Get the obstacles ID
 	int getID() { return ID; };
 
-	// Setters
+	// Set the obstacles ID
 	void setID(int id) { ID = id; };
 
 protected:
+	// Position of the obstacle
 	sf::Vector2f position;
+
+	// ID of the obstacle
 	int ID;
 };
 

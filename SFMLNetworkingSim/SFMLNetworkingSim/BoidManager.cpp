@@ -1,7 +1,11 @@
+// BoidManager.cpp
+// Update all boids in the flock according to the simulation rules
+
 #include "BoidManager.h"
 
 BoidManager::BoidManager(sf::RenderWindow* hwnd, Input* in)
 {
+	// Set the window and input
 	window = hwnd;
 	input = in;
 
@@ -27,13 +31,10 @@ BoidManager::~BoidManager()
 
 void BoidManager::update(float dt, std::vector<Obstacle>& obs)
 {
+	// Make the boids follow the rules of movement of the simulation
 	moveBoids(dt, obs);
 
-	/*for (auto& boid : boidFlock)
-	{
-		std::cout << "Boid X: " << boid.getPosition().x << ", Boid Y: " << boid.getPosition().y << std::endl;
-	}*/
-
+	// Update the boid count and separation text
 	updateText();
 }
 
@@ -52,6 +53,8 @@ void BoidManager::render(sf::RenderWindow * window)
 
 void BoidManager::addBoidToFlock(int ID, float posX, float posY, float velX, float velY, int r, int g, int b, int a)
 {
+	// Set the new boids position, velocity and colour
+	// And add it to the flock
 	sf::Vector2f newPos = sf::Vector2f(posX, posY);
 	sf::Vector2f newVel = sf::Vector2f(velX, velY);
 	sf::Color col = sf::Color(r, g, b, a);
@@ -119,7 +122,7 @@ void BoidManager::initialisePositions()
 		sf::Vector2f newPos = sf::Vector2f(randX, randY);
 		sf::Vector2f newVel = sf::Vector2f(0.0f, 0.0f);
 
-		// Add a new boid based on the position and colour generated
+		// Add a new boid based on the position, velocity and colour generated
 		boidFlock.push_back(Boid(-1, newPos, newVel, col));
 	}
 }
@@ -149,6 +152,7 @@ sf::Vector2f BoidManager::distanceCheck(Boid& bj, float dt)
 {
 	sf::Vector2f currentDistance = sf::Vector2f(0.0f, 0.0f);
 
+	// Decrease the separation value
 	if (input->isKeyDown(sf::Keyboard::S))
 	{
 		input->setKeyUp(sf::Keyboard::S);
@@ -157,6 +161,7 @@ sf::Vector2f BoidManager::distanceCheck(Boid& bj, float dt)
 			separationValue -= 1;
 		}
 	}
+	// Increase the separation value
 	else if (input->isKeyDown(sf::Keyboard::W))
 	{
 		input->setKeyUp(sf::Keyboard::W);

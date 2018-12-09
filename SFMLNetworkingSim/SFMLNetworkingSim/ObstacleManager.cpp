@@ -1,3 +1,6 @@
+// ObstacleManager.cpp
+// Used for containing all information about obstacles
+
 #include "ObstacleManager.h"
 
 ObstacleManager::ObstacleManager(sf::RenderWindow* hwnd, Input* in)

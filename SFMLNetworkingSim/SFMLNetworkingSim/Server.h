@@ -14,40 +14,41 @@
 #define SERVERPORT 4444
 #define SERVERPORT2 4445
 
-// The (fixed) size of message that we send between the two programs
-// --- MAY NOT BE NEEDED --- //
-#define MESSAGESIZE 40
-
 class Server
 {
 public:
 	Server(sf::RenderWindow* hwnd, Input *input);
 	~Server();
 
-	// Functions
+	// Update the server
 	void update(float dt);
+	// Render the servers simulation
 	void render(sf::RenderWindow* window);
 
 protected:
-	// Server set-up, TCP or UDP
-	void tcpServer();
+	// Server socket set-up for UDP
 	void udpServerSocketSetup();
 
-	// Communication with client, TCP or UDP
-	void talk_to_client_tcp(sf::TcpSocket& clientSocket);
+	// Communication with client about boids via UDP
 	void receiveBoidInfo(sf::UdpSocket& clientSocket);
+	// Communication with client about obstacles via UDP
 	void receiveObstacleInfo(sf::UdpSocket& clientSocket);
 
-	// NEED TO FIND BETTER WAY TO HANDLE ERRORS
+	// Error to give if cant send/receive
 	void die(const char *message);
 
 private:
-	// Background setup
+	// SFML setup
 	sf::RenderWindow* window;
 	Input* input;
+
+	// Total time the server has been running
 	float totalTime;
+	// Tick count
 	float tickTimer;
+	// Message history about boids
 	std::vector<BoidData> boidMsgs;
+	// Message history about obstacles
 	std::vector<ObstacleData> obsMsgs;
 
 	// Server setup

@@ -1,23 +1,30 @@
+// Boid.cpp
+// Sets the boids ID, position, velocity, radius, fill colour and point count
+
 #include "Boid.h"
 
 Boid::Boid(int id, sf::Vector2f& pos, sf::Vector2f& vel, sf::Color& col) : CircleShape()
 {
+	// Set the boids ID
 	ID = id;
 
-	// Init tracking position to 0.0f.
+	// Set the boids position
 	position.x = pos.x;
 	position.y = pos.y;
 
-	// Initialise velocity of Boid to 0.0f.
+	// Set the boids velocity
 	velocity.x = vel.x;
 	velocity.y = vel.y;
 
-	// Set shape of boid
+	// Set boid radius
 	setRadius(5.0f);
+	// Set boid point count (3 for a triangle)
 	setPointCount(3);
 
+	// Set the position
 	setPosition(pos);
 	
+	// Set the fill colour
 	setFillColor(col);
 }
 
@@ -27,17 +34,18 @@ Boid::~Boid()
 
 void Boid::update(float dt)
 {
+	// Continually update the boids position variable
 	position = getPosition();
 }
 
 void Boid::predictPosition(float time)
 {
+	// Get the size of the messages
 	const int msize = messages_.size();
-
-	//assert(msize >= 3);
 
 	if (msize >= 3 && ID != -1)
 	{
+		// Get three messages from the boids message history
 		const BoidData& msg0 = messages_[msize - 1];
 		const BoidData& msg1 = messages_[msize - 2];
 		const BoidData& msg2 = messages_[msize - 3];
@@ -47,18 +55,22 @@ void Boid::predictPosition(float time)
 		position.y = msg0.positionY;*/
 
 		// Linear
+		// Calculate the time difference between the messages
 		float msgTime = msg0.time - msg1.time;
+		// Calculate the x speed difference
 		float msgSpeedX = (msg0.positionX - msg1.positionX) / msgTime;
+		// Calculate the y speed difference
 		float msgSpeedY = (msg0.positionY - msg1.positionY) / msgTime;
-
+		// Calculate the difference between the time of the simulation
+		// and the most recent message time
 		float timeDiff = time - msg0.time;
 
-		position.x = msg0.positionX + (msgSpeedX);// *timeDiff);
-		position.y = msg0.positionY + (msgSpeedY);// *timeDiff);
+		// Set the boids position to the predicted position
+		position.x = msg0.positionX + (msgSpeedX * timeDiff);
+		position.y = msg0.positionY + (msgSpeedY * timeDiff);
 
+		// Set the position of the boid
 		setPosition(position);
-
-		//messages_.clear();
 
 		// Quadratic
 		// v^2 = u^2 + 2as
@@ -76,10 +88,12 @@ void Boid::predictPosition(float time)
 
 void Boid::addMessage(const BoidData & msg)
 {
+	// Add a message to the boids message history
 	messages_.push_back(msg);
 }
 
 void Boid::setBoidVelocity(sf::Vector2f vel)
 { 
+	// Set the boids velocity
 	velocity = vel; 
 }
