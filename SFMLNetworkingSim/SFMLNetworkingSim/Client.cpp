@@ -143,7 +143,7 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 
 	for (int i = 0; i < clientBoidManager->getBoidFlock().size(); i++)
 	{
-		if (clientBoidManager->getBoidFlock()[i].getBoidID() == -1)
+		if (clientBoidManager->getBoidFlock()[i].getBoidID() == -1 && !sentBoids)
 		{
 			// Fill out new message type containing the boids ID, position, velocity, colour and time the message was sent
 			BoidData boidData(clientBoidManager->getBoidFlock()[i].getBoidID(), clientBoidManager->getBoidFlock()[i].getPosition().x, clientBoidManager->getBoidFlock()[i].getPosition().y, clientBoidManager->getBoidFlock()[i].getBoidVelocity().x, clientBoidManager->getBoidFlock()[i].getBoidVelocity().y, clientBoidManager->getBoidFlock()[i].getFillColor().r, clientBoidManager->getBoidFlock()[i].getFillColor().g, clientBoidManager->getBoidFlock()[i].getFillColor().b, clientBoidManager->getBoidFlock()[i].getFillColor().a, totalTime);
@@ -174,6 +174,8 @@ void Client::receiveBoidInfo(sf::UdpSocket & socket)
 			sendBoidPacket << boidData.time;
 		}
 	}
+
+	sentBoids = true;
 
 	// Address and port of the server to send the information to
 	sf::IpAddress recipient = SERVERIP;

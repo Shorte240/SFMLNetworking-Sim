@@ -60,6 +60,8 @@ private:
 	float tickTimer;
 	// Clients ID
 	int clientID;
+	// Bool to check if initial boids have been sent
+	bool sentBoids = false;
 	// A message history about boids
 	std::vector<BoidData> boidMsgs;
 	// A message history about obstacles
